@@ -1,43 +1,70 @@
 const Expense = require("../models/Expense");
 
-// @desc    Get all expenses
-exports.getExpenses = async (req, res) => {
+// @desc    Add a new transaction
+exports.addTransaction = async (req, res) => {
   try {
-    const expenses = await Expense.find().sort({ date: -1 });
-    res.status(200).json({ success: true, data: expenses });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
+    const { type, category, amount, date, description } = req.body;
 
-// @desc    Create new expense
-exports.addExpense = async (req, res) => {
-  try {
-    const expense = await Expense.create(req.body);
-    res.status(201).json({ success: true, data: expense });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
-};
-
-// @desc    Update expense
-exports.updateExpense = async (req, res) => {
-  try {
-    const updated = await Expense.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
+    const newExpense = new Expense({
+      userId: req.user.id, // from auth middleware
+      type,
+      category,
+      amount,
+      date,
+      description,
     });
-    res.status(200).json({ success: true, data: updated });
+
+    await newExpense.save();
+    res.status(201).json({ success: true, message: "Transaction added", data: newExpense });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, message: "Server Error", error: err.message });
   }
 };
 
-// @desc    Delete expense
-exports.deleteExpense = async (req, res) => {
+// @desc    Get all transactions of a user
+exports.getTransactions = async (req, res) => {
   try {
-    await Expense.findByIdAndDelete(req.params.id);
-    res.status(200).json({ success: true, message: "Expense deleted" });
+    const expenses = await Expense.find({ userId: req.user.id }).sort({ date: -1 });
+    res.json({ success: true, data: expenses });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, message: "Server Error", error: err.message });
+  }
+};
+
+// @desc    Update a transaction
+exports.updateTransaction = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updatedExpense = await Expense.findOneAndUpdate(
+      { _id: id, userId: req.user.id },
+      req.body,
+      { new: true }
+    );
+
+    if (!updatedExpense) {
+      return res.status(404).json({ success: false, message: "Transaction not found" });
+    }
+
+    res.json({ success: true, message: "Transaction updated", data: updatedExpense });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server Error", error: err.message });
+  }
+};
+
+// @desc    Delete a transaction
+exports.deleteTransaction = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await Expense.findOneAndDelete({ _id: id, userId: req.user.id });
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "Transaction not found" });
+    }
+
+    res.json({ success: true, message: "Transaction deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server Error", error: err.message });
   }
 };
