@@ -7,6 +7,7 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const authRoutes = require('./routes/authRoutes');
 const categoryRoutes = require("./routes/categoryRoutes");
 const errorHandler = require("./middlewares/errorHandler");
+const incomeRoutes = require('./routes/incomeRoutes');
 
 dotenv.config();
 connectDB();
@@ -18,7 +19,8 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use("/api/expenses", expenseRoutes);
-app.use("/api/categories", categoryRoutes); 
+app.use("/api/categories", categoryRoutes);
+app.use('/api/income', incomeRoutes);
 
 // Error Handler
 app.use(errorHandler);

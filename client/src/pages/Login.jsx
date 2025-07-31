@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ Import navigate
 
 function Login() {
+  const navigate = useNavigate(); // ✅ Hook for redirection
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -18,7 +21,6 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setMessage("");
     setError("");
 
@@ -33,9 +35,12 @@ function Login() {
 
       const data = await res.json();
 
-      if (data.success) {
+      if (data.success && data.data.token) {
+        localStorage.setItem("token", data.data.token);
+        localStorage.setItem("user", JSON.stringify(data.data));
         setMessage(data.message || "Login successful!");
         setFormData({ email: "", password: "" });
+        navigate("/dashboard");
       } else {
         setError(data.message || "Invalid credentials");
       }
@@ -50,7 +55,9 @@ function Login() {
         className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md
                    transform scale-95 opacity-0 animate-fade-in-up border border-blue-700"
       >
-        <h2 className="text-3xl font-bold text-center text-blue-400 mb-6">Login to Your Account</h2>
+        <h2 className="text-3xl font-bold text-center text-blue-400 mb-6">
+          Login to Your Account
+        </h2>
 
         {message && (
           <p className="text-green-400 text-sm text-center mb-4 transition-opacity duration-500">
@@ -65,7 +72,9 @@ function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-gray-300 font-medium">Email Address</label>
+            <label htmlFor="email" className="block text-gray-300 font-medium">
+              Email Address
+            </label>
             <input
               type="email"
               name="email"
@@ -83,7 +92,12 @@ function Login() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-gray-300 font-medium">Password</label>
+            <label
+              htmlFor="password"
+              className="block text-gray-300 font-medium"
+            >
+              Password
+            </label>
             <input
               type="password"
               name="password"
@@ -115,8 +129,7 @@ function Login() {
           Don't have an account?{" "}
           <a
             href="/register"
-            className="text-blue-500 hover:underline
-                       transition duration-200 ease-in-out"
+            className="text-blue-500 hover:underline transition duration-200 ease-in-out"
           >
             Register
           </a>

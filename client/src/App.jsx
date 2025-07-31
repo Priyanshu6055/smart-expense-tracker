@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/Home"; // Assuming Home.jsx is in src/pages
 import Register from "./pages/Register"; // Assuming Register.jsx is in src/pages
 import Login from "./pages/Login"; // Assuming Login.jsx is in src/pages
+import Dashboard from "./pages/Dashboard"; // ✅ add this at the top
+import IncomeManager from "./components/IncomeManager";
+
 
 function App() {
   return (
@@ -50,6 +53,9 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/manage-income" element={<IncomeManager />} />
+
         </Routes>
       </div>
 
