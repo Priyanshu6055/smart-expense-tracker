@@ -29,6 +29,6 @@ MONGO_URI=mongodb://localhost:27017/expenseTracker
     </pre>
   </li>
   <li><strong>Start the backend server:</strong><br>
-    <code>npm run dev</code>
+    <code>npm start</code>
   </li>
 </ol>
