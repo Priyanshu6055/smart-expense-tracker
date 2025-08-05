@@ -5,6 +5,7 @@ import Register from "./pages/Register"; // Assuming Register.jsx is in src/page
 import Login from "./pages/Login"; // Assuming Login.jsx is in src/pages
 import Dashboard from "./pages/Dashboard"; // ✅ add this at the top
 import IncomeManager from "./components/IncomeManager";
+import ExpenseManager from "./components/AddExpense";
 
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/manage-income" element={<IncomeManager />} />
+          <Route path="/manage-expense" element={<ExpenseManager />} />
 
         </Routes>
       </div>

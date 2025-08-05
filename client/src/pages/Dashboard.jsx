@@ -99,6 +99,13 @@ const Dashboard = () => {
                           hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-300">Total Expenses</h3>
             <p className="text-3xl font-bold text-red-400 mt-2">₹ {getTotalExpenses()}</p>
+                        <Link
+              to="/manage-expense" 
+              className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm
+                         hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              Add Expense
+            </Link>
           </div>
           {/* Current Balance Card */}
           <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-blue-700

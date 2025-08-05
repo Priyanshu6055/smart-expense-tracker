@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // Ensure axios is installed: npm install axios or yarn add axios
+import axios from 'axios'; 
 
 const IncomeManager = () => {
   const [incomes, setIncomes] = useState([]);
   const [amount, setAmount] = useState('');
   const [source, setSource] = useState('');
   const [date, setDate] = useState('');
-  // Added new states for 'type' and 'frequency' as per backend schema
-  const [type, setType] = useState('one-time'); // Default to 'one-time'
-  const [frequency, setFrequency] = useState(''); // Optional, only for recurring
-
+  const [type, setType] = useState('one-time'); 
+  const [frequency, setFrequency] = useState(''); 
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
   const [monthlyIncome, setMonthlyIncome] = useState(0);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -42,9 +41,6 @@ const IncomeManager = () => {
       setError(''); // Clear error on successful fetch
     } catch (err) {
       console.error("Error fetching monthly income:", err);
-      // This error might not be critical enough to show as a main error,
-      // as the dashboard might still load without monthly income.
-      // setError("Failed to load monthly income."); // Keep this commented if not critical
     }
   };
 
@@ -58,7 +54,6 @@ const IncomeManager = () => {
       return;
     }
 
-    // Prepare data to send to backend, including type and frequency
     const incomeData = {
       amount: parseFloat(amount),
       source,
