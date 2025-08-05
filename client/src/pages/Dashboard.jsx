@@ -1,29 +1,75 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link } from "react-router-dom";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'; // For charting
+import { ArrowDownCircle, ArrowUpCircle, Search, Calendar, Filter, FileText, PlusCircle, Download } from 'lucide-react'; // Icons
 
-const Dashboard = () => {
+// Define a set of distinct colors for categories
+const CATEGORY_COLORS = [
+  '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00bcd4', '#f44336', '#9c27b0', '#673ab7',
+  '#3f51b5', '#2196f3', '#03a9f4', '#00bbd4', '#009688', '#4caf50', '#8bc34a', '#cddc39',
+  '#ffeb3b', '#ffc107', '#ff9800', '#ff5722', '#795548', '#607d8b'
+];
+
+function Dashboard() {
   const [transactions, setTransactions] = useState([]);
-  const [totalIncomeAmount, setTotalIncomeAmount] = useState(0); // State for total income
+  const [totalIncomeAmount, setTotalIncomeAmount] = useState(0);
+  const [categories, setCategories] = useState([]); // State for available categories
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [transactionsPerPage] = useState(5); // Show 5 recent transactions per page
+
   const token = localStorage.getItem("token");
 
-  // Function to fetch all transactions (expenses)
-  const fetchTransactions = async () => {
+  // Fetch all categories
+  const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/expenses", {
+      const res = await axios.get("http://localhost:5000/api/categories", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCategories(res.data?.data || []);
+    } catch (err) {
+      console.error("Fetch categories error:", err);
+      // Not critical enough to block dashboard, but log
+    }
+  };
+
+  // Fetch transactions with filters
+  const fetchTransactions = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      let url = "http://localhost:5000/api/expenses?";
+      const params = new URLSearchParams();
+
+      if (selectedCategory) params.append('category', selectedCategory);
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+      // Backend should handle search term, or filter locally if backend doesn't support
+      // For now, we'll filter locally for search term.
+
+      const res = await axios.get(url + params.toString(), {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTransactions(res.data?.data || []);
     } catch (err) {
       console.error("Fetch expenses error:", err);
       setError(err.response?.data?.message || "Failed to fetch expenses");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Function to fetch total monthly income
+  // Fetch total monthly income
   const fetchTotalMonthlyIncome = async () => {
     const today = new Date();
     const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -35,40 +81,97 @@ const Dashboard = () => {
       setTotalIncomeAmount(res.data.totalIncome);
     } catch (err) {
       console.error("Fetch monthly income error:", err);
-      // Don't set global error for this, as it's just one part of the dashboard
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this transaction?"))
-      return;
-    try {
-      await axios.delete(`http://localhost:5000/api/expenses/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setTransactions((prev) => prev.filter((tx) => tx._id !== id));
-    } catch (err) {
-      alert("Failed to delete expense."); // Using alert as per previous code, consider custom modal
+    if (window.confirm("Are you sure you want to delete this transaction?")) {
+      try {
+        await axios.delete(`http://localhost:5000/api/expenses/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        fetchTransactions(); // Re-fetch to update the list
+      } catch (err) {
+        alert("Failed to delete expense.");
+      }
     }
   };
 
-  // This getTotal now only calculates total expenses from the 'transactions' state
   const getTotalExpenses = () =>
     (transactions || [])
-      .filter((tx) => tx.type === "expense") // Assuming transactions only contain expenses now
+      .filter((tx) => tx.type === "expense")
       .reduce((acc, curr) => acc + curr.amount, 0);
 
+  // Data for Pie Chart
+  const getChartData = () => {
+    const expenseCategories = {};
+    transactions
+      .filter(tx => tx.type === 'expense')
+      .forEach(tx => {
+        expenseCategories[tx.category] = (expenseCategories[tx.category] || 0) + tx.amount;
+      });
+
+    return Object.keys(expenseCategories).map(category => ({
+      name: category,
+      value: expenseCategories[category]
+    }));
+  };
+
+  // Filter and search transactions locally
+  const getFilteredAndSearchedTransactions = () => {
+    let filtered = transactions;
+
+    if (searchTerm) {
+      filtered = filtered.filter(tx =>
+        tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tx.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    // Date range and category filtering is done by fetchTransactions
+    // so no need to filter again here unless backend doesn't support it
+
+    return filtered;
+  };
+
+  const filteredAndSearchedTransactions = getFilteredAndSearchedTransactions();
+
+  // Pagination logic
+  const indexOfLastTransaction = currentPage * transactionsPerPage;
+  const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+  const currentTransactions = filteredAndSearchedTransactions.slice(indexOfFirstTransaction, indexOfLastTransaction);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   useEffect(() => {
-    // Fetch both expenses and total income when component mounts
-    const loadDashboardData = async () => {
-      setLoading(true);
-      await Promise.all([fetchTransactions(), fetchTotalMonthlyIncome()]);
-      setLoading(false);
-    };
-    loadDashboardData();
-  }, []);
+    fetchCategories();
+    fetchTransactions();
+    fetchTotalMonthlyIncome();
+  }, [token, selectedCategory, startDate, endDate]); // Re-fetch when filters change
 
   if (loading) return <p className="text-center mt-10 text-blue-300">Loading dashboard...</p>;
+
+  const exportToExcel = () => {
+    // Requires xlsx library. If not installed, this will fail.
+    // Ensure you have added <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    // or npm install xlsx and import it.
+    if (typeof XLSX === 'undefined') {
+      alert("XLSX library not loaded. Please ensure it's installed or linked.");
+      return;
+    }
+
+    const dataToExport = filteredAndSearchedTransactions.map(tx => ({
+      Date: new Date(tx.date).toLocaleDateString(),
+      Type: tx.type,
+      Category: tx.category,
+      Amount: tx.amount,
+      Description: tx.description,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+    XLSX.writeFile(wb, "transactions.xlsx");
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center px-4 py-12 font-inter
@@ -79,35 +182,34 @@ const Dashboard = () => {
 
         {error && <p className="text-red-400 text-center mb-6">{error}</p>}
 
+        {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {/* Total Income Card - Now with Customize Button */}
           <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-green-700
                           hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-300 mb-2">Total Income (This Month)</h3>
             <p className="text-3xl font-bold text-green-400 mt-2">₹ {totalIncomeAmount}</p>
             <Link
-              to="/manage-income" // Link to the new income management page
-              className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm
+              to="/manage-income"
+              className="inline-flex items-center mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm
                          hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105"
             >
-              Customize Income
+              <PlusCircle size={16} className="mr-2" /> Customize Income
             </Link>
           </div>
 
-          {/* Total Expenses Card */}
           <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-red-700
                           hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-300">Total Expenses</h3>
             <p className="text-3xl font-bold text-red-400 mt-2">₹ {getTotalExpenses()}</p>
-                        <Link
-              to="/manage-expense" 
-              className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm
+            <Link
+              to="/manage-expense"
+              className="inline-flex items-center mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm
                          hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105"
             >
-              Add Expense
+              <PlusCircle size={16} className="mr-2" /> Add Expense
             </Link>
           </div>
-          {/* Current Balance Card */}
+
           <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-blue-700
                           hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-300">Current Balance</h3>
@@ -117,61 +219,214 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Expense Categories Chart */}
+        <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 mb-10">
+          <h2 className="text-2xl font-bold text-blue-400 mb-6 text-center">Expense Breakdown by Category</h2>
+          {getChartData().length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={getChartData()}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                >
+                  {getChartData().map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#374151', border: 'none', borderRadius: '8px' }}
+                  itemStyle={{ color: '#E5E7EB' }}
+                />
+                <Legend
+                  wrapperStyle={{ color: '#E5E7EB' }}
+                  formatter={(value, entry, index) => <span style={{ color: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }}>{value}</span>}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-center text-gray-400 py-6">No expense data to display chart.</p>
+          )}
+        </div>
+
+        {/* Filters and Search */}
+        <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label htmlFor="category-filter" className="block text-gray-300 font-medium text-sm mb-1">
+              <Filter size={16} className="inline mr-1" /> Filter by Category
+            </label>
+            <select
+              id="category-filter"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white
+                         focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            >
+              <option value="">All Categories</option>
+              {categories.map(cat => (
+                <option key={cat._id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="start-date" className="block text-gray-300 font-medium text-sm mb-1">
+              <Calendar size={16} className="inline mr-1" /> Start Date
+            </label>
+            <input
+              type="date"
+              id="start-date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white
+                         focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="end-date" className="block text-gray-300 font-medium text-sm mb-1">
+              <Calendar size={16} className="inline mr-1" /> End Date
+            </label>
+            <input
+              type="date"
+              id="end-date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white
+                         focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="search-term" className="block text-gray-300 font-medium text-sm mb-1">
+              <Search size={16} className="inline mr-1" /> Search
+            </label>
+            <input
+              type="text"
+              id="search-term"
+              placeholder="Search by description or category"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400
+                         focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
+          </div>
+        </div>
+
         {/* Transaction Table */}
         <div className="bg-gray-800 shadow-xl rounded-xl overflow-hidden border border-gray-700 mt-10">
-          <table className="w-full table-auto">
-            <thead className="bg-gray-700 text-gray-200 text-left">
-              <tr>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Amount</th>
-                <th className="px-4 py-3">Description</th>
-                <th className="px-4 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(transactions || []).map((tx) => (
-                <tr key={tx._id} className="border-b border-gray-700 hover:bg-gray-700 transition duration-200">
-                  <td className="px-4 py-3 text-gray-300">
-                    {new Date(tx.date).toLocaleDateString()}
-                  </td>
-                  <td className={`px-4 py-3 capitalize font-medium ${tx.type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
-                    {tx.type}
-                  </td>
-                  <td className="px-4 py-3 text-gray-300">{tx.category}</td>
-                  <td className="px-4 py-3 text-gray-300">₹ {tx.amount}</td>
-                  <td className="px-4 py-3 text-gray-300">{tx.description}</td>
-                  <td className="px-4 py-3 space-x-2">
-                    <button
-                      className="bg-yellow-500 text-white px-3 py-1.5 rounded-lg font-semibold
-                                 hover:bg-yellow-600 transition duration-200 hover:scale-105"
-                      onClick={() => alert("Edit feature coming soon")}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="bg-red-600 text-white px-3 py-1.5 rounded-lg font-semibold
-                                 hover:bg-red-700 transition duration-200 hover:scale-105"
-                      onClick={() => handleDelete(tx._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {transactions.length === 0 && !loading && (
+          <div className="flex justify-between items-center px-6 py-4 bg-gray-700 border-b border-gray-600">
+            <h2 className="text-xl font-bold text-gray-200">Recent Transactions</h2>
+            <button
+              onClick={exportToExcel}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm
+                         hover:bg-blue-700 transition duration-300 ease-in-out flex items-center"
+            >
+              <Download size={16} className="mr-2" /> Export to Excel
+            </button>
+          </div>
+          <div className="overflow-x-auto"> {/* Ensures responsiveness for tables */}
+            <table className="w-full table-auto">
+              <thead className="bg-gray-700 text-gray-200 text-left">
                 <tr>
-                  <td colSpan="6" className="text-center text-gray-400 py-6">
-                    No transactions found.
-                  </td>
+                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Type</th>
+                  <th className="px-4 py-3">Category</th>
+                  <th className="px-4 py-3">Amount</th>
+                  <th className="px-4 py-3">Description</th>
+                  <th className="px-4 py-3">Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {currentTransactions.length > 0 ? (
+                  currentTransactions.map((tx) => (
+                    <tr key={tx._id} className="border-b border-gray-700 hover:bg-gray-700 transition duration-200">
+                      <td className="px-4 py-3 text-gray-300">
+                        {new Date(tx.date).toLocaleDateString()}
+                      </td>
+                      <td className={`px-4 py-3 capitalize font-medium flex items-center ${tx.type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
+                        {tx.type === 'income' ? <ArrowUpCircle size={16} className="mr-1" /> : <ArrowDownCircle size={16} className="mr-1" />}
+                        {tx.type}
+                      </td>
+                      <td className="px-4 py-3 text-gray-300">{tx.category}</td>
+                      <td className="px-4 py-3 text-gray-300">₹ {tx.amount}</td>
+                      <td className="px-4 py-3 text-gray-300">{tx.description}</td>
+                      <td className="px-4 py-3 space-x-2">
+                        <button
+                          className="bg-yellow-500 text-white px-3 py-1.5 rounded-lg font-semibold text-xs
+                                     hover:bg-yellow-600 transition duration-200 hover:scale-105"
+                          onClick={() => alert("Edit feature coming soon")}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="bg-red-600 text-white px-3 py-1.5 rounded-lg font-semibold text-xs
+                                     hover:bg-red-700 transition duration-200 hover:scale-105"
+                          onClick={() => handleDelete(tx._id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="text-center text-gray-400 py-6">
+                      No transactions found for the selected filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          {filteredAndSearchedTransactions.length > transactionsPerPage && (
+            <div className="flex justify-center items-center space-x-2 py-4 bg-gray-700 border-t border-gray-600">
+              {[...Array(Math.ceil(filteredAndSearchedTransactions.length / transactionsPerPage)).keys()].map(number => (
+                <button
+                  key={number + 1}
+                  onClick={() => paginate(number + 1)}
+                  className={`px-3 py-1 rounded-lg font-semibold text-sm
+                              ${currentPage === number + 1 ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}
+                              transition duration-200`}
+                >
+                  {number + 1}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Floating Action Buttons */}
+      <div className="fixed bottom-6 right-6 flex flex-col space-y-4 z-50">
+        <Link
+          to="/manage-income"
+          className="bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700
+                     transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-300
+                     flex items-center justify-center"
+          title="Add Income"
+        >
+          <PlusCircle size={24} />
+        </Link>
+        <Link
+          to="/manage-expense"
+          className="bg-red-600 text-white p-4 rounded-full shadow-lg hover:bg-red-700
+                     transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-300
+                     flex items-center justify-center"
+          title="Add Expense"
+        >
+          <PlusCircle size={24} />
+        </Link>
+      </div>
+
+      {/* Custom CSS for animations and font import */}
       <style>
         {`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
@@ -198,6 +453,6 @@ const Dashboard = () => {
       </style>
     </div>
   );
-};
+}
 
 export default Dashboard;
