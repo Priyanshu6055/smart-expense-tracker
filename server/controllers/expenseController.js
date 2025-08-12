@@ -21,15 +21,39 @@ exports.addTransaction = async (req, res) => {
   }
 };
 
+
 // @desc    Get all transactions of a user
 exports.getTransactions = async (req, res) => {
   try {
-    const expenses = await Expense.find({ userId: req.user.id }).sort({ date: -1 });
+    const { fromDate, toDate, category } = req.query;
+    const filter = { userId: req.user.id };
+
+    // Filter by date range
+    if (fromDate && toDate) {
+      filter.date = {
+        $gte: new Date(fromDate),
+        $lte: new Date(toDate),
+      };
+    }
+
+    // Filter by category
+    if (category) {
+      filter.category = category;
+    }
+
+    const expenses = await Expense.find(filter).sort({ date: -1 });
+
     res.json({ success: true, data: expenses });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server Error", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: err.message,
+    });
   }
 };
+
+
 
 // @desc    Update a transaction
 exports.updateTransaction = async (req, res) => {
@@ -51,6 +75,8 @@ exports.updateTransaction = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error", error: err.message });
   }
 };
+
+
 
 // @desc    Delete a transaction
 exports.deleteTransaction = async (req, res) => {

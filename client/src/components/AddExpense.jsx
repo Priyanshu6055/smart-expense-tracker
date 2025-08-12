@@ -35,7 +35,7 @@ const AddExpense = () => {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-red-700 mt-10 max-w-xl mx-auto">
+    <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-red-700 max-w-xl mx-auto">
       <h2 className="text-2xl font-bold text-red-400 mb-6 text-center">Add Expense</h2>
 
       {message && (

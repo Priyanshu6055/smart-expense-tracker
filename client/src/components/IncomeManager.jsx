@@ -108,7 +108,7 @@ const IncomeManager = () => {
   }, [token]); // Added token to dependency array to re-fetch if token changes (e.g., after login)
 
   return (
-    <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-blue-700 mt-10">
+    <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-blue-700">
       <h2 className="text-2xl font-bold text-blue-400 mb-6 text-center">Manage Your Income</h2>
 
       {message && (

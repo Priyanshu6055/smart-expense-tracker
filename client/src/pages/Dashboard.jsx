@@ -1,14 +1,48 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'; // For charting
-import { ArrowDownCircle, ArrowUpCircle, Search, Calendar, Filter, FileText, PlusCircle, Download } from 'lucide-react'; // Icons
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts"; // For charting
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Search,
+  Calendar,
+  Filter,
+  FileText,
+  PlusCircle,
+  Download,
+} from "lucide-react"; // Icons
 
-// Define a set of distinct colors for categories
 const CATEGORY_COLORS = [
-  '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00bcd4', '#f44336', '#9c27b0', '#673ab7',
-  '#3f51b5', '#2196f3', '#03a9f4', '#00bbd4', '#009688', '#4caf50', '#8bc34a', '#cddc39',
-  '#ffeb3b', '#ffc107', '#ff9800', '#ff5722', '#795548', '#607d8b'
+  "#8884d8",
+  "#82ca9d",
+  "#ffc658",
+  "#ff7300",
+  "#00bcd4",
+  "#f44336",
+  "#9c27b0",
+  "#673ab7",
+  "#3f51b5",
+  "#2196f3",
+  "#03a9f4",
+  "#00bbd4",
+  "#009688",
+  "#4caf50",
+  "#8bc34a",
+  "#cddc39",
+  "#ffeb3b",
+  "#ffc107",
+  "#ff9800",
+  "#ff5722",
+  "#795548",
+  "#607d8b",
 ];
 
 function Dashboard() {
@@ -19,10 +53,10 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   // Filter states
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,9 +85,9 @@ function Dashboard() {
       let url = "http://localhost:5000/api/expenses?";
       const params = new URLSearchParams();
 
-      if (selectedCategory) params.append('category', selectedCategory);
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      if (selectedCategory) params.append("category", selectedCategory);
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
       // Backend should handle search term, or filter locally if backend doesn't support
       // For now, we'll filter locally for search term.
 
@@ -72,12 +106,15 @@ function Dashboard() {
   // Fetch total monthly income
   const fetchTotalMonthlyIncome = async () => {
     const today = new Date();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, "0");
     const year = today.getFullYear();
     try {
-      const res = await axios.get(`http://localhost:5000/api/income/monthly?month=${month}&year=${year}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `http://localhost:5000/api/income/monthly?month=${month}&year=${year}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setTotalIncomeAmount(res.data.totalIncome);
     } catch (err) {
       console.error("Fetch monthly income error:", err);
@@ -106,14 +143,15 @@ function Dashboard() {
   const getChartData = () => {
     const expenseCategories = {};
     transactions
-      .filter(tx => tx.type === 'expense')
-      .forEach(tx => {
-        expenseCategories[tx.category] = (expenseCategories[tx.category] || 0) + tx.amount;
+      .filter((tx) => tx.type === "expense")
+      .forEach((tx) => {
+        expenseCategories[tx.category] =
+          (expenseCategories[tx.category] || 0) + tx.amount;
       });
 
-    return Object.keys(expenseCategories).map(category => ({
+    return Object.keys(expenseCategories).map((category) => ({
       name: category,
-      value: expenseCategories[category]
+      value: expenseCategories[category],
     }));
   };
 
@@ -122,13 +160,12 @@ function Dashboard() {
     let filtered = transactions;
 
     if (searchTerm) {
-      filtered = filtered.filter(tx =>
-        tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tx.category.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (tx) =>
+          tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          tx.category.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    // Date range and category filtering is done by fetchTransactions
-    // so no need to filter again here unless backend doesn't support it
 
     return filtered;
   };
@@ -138,7 +175,10 @@ function Dashboard() {
   // Pagination logic
   const indexOfLastTransaction = currentPage * transactionsPerPage;
   const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
-  const currentTransactions = filteredAndSearchedTransactions.slice(indexOfFirstTransaction, indexOfLastTransaction);
+  const currentTransactions = filteredAndSearchedTransactions.slice(
+    indexOfFirstTransaction,
+    indexOfLastTransaction
+  );
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -148,18 +188,21 @@ function Dashboard() {
     fetchTotalMonthlyIncome();
   }, [token, selectedCategory, startDate, endDate]); // Re-fetch when filters change
 
-  if (loading) return <p className="text-center mt-10 text-blue-300">Loading dashboard...</p>;
+  if (loading)
+    return (
+      <p className="text-center mt-10 text-blue-300">Loading dashboard...</p>
+    );
 
   const exportToExcel = () => {
     // Requires xlsx library. If not installed, this will fail.
     // Ensure you have added <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     // or npm install xlsx and import it.
-    if (typeof XLSX === 'undefined') {
+    if (typeof XLSX === "undefined") {
       alert("XLSX library not loaded. Please ensure it's installed or linked.");
       return;
     }
 
-    const dataToExport = filteredAndSearchedTransactions.map(tx => ({
+    const dataToExport = filteredAndSearchedTransactions.map((tx) => ({
       Date: new Date(tx.date).toLocaleDateString(),
       Type: tx.type,
       Category: tx.category,
@@ -174,20 +217,32 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 py-12 font-inter
-                    bg-gradient-to-br from-gray-900 to-blue-950 text-gray-100">
-      <div className="max-w-6xl w-full mx-auto p-6
-                      transform scale-95 opacity-0 animate-fade-in-up">
-        <h1 className="text-4xl font-extrabold text-blue-400 mb-8 text-center">Your Dashboard</h1>
+    <div
+      className="min-h-screen flex flex-col items-center px-4 py-12 font-inter
+                    bg-gradient-to-br from-gray-900 to-blue-950 text-gray-100"
+    >
+      <div
+        className="max-w-6xl w-full mx-auto p-6
+                      transform scale-95 opacity-0 animate-fade-in-up"
+      >
+        <h1 className="text-4xl font-extrabold text-blue-400 mb-8 text-center">
+          Your Dashboard
+        </h1>
 
         {error && <p className="text-red-400 text-center mb-6">{error}</p>}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-green-700
-                          hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-300 mb-2">Total Income (This Month)</h3>
-            <p className="text-3xl font-bold text-green-400 mt-2">₹ {totalIncomeAmount}</p>
+          <div
+            className="bg-gray-800 p-6 rounded-xl shadow-xl border border-green-700
+                          hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+          >
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">
+              Total Income (This Month)
+            </h3>
+            <p className="text-3xl font-bold text-green-400 mt-2">
+              ₹ {totalIncomeAmount}
+            </p>
             <Link
               to="/manage-income"
               className="inline-flex items-center mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm
@@ -197,10 +252,16 @@ function Dashboard() {
             </Link>
           </div>
 
-          <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-red-700
-                          hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-300">Total Expenses</h3>
-            <p className="text-3xl font-bold text-red-400 mt-2">₹ {getTotalExpenses()}</p>
+          <div
+            className="bg-gray-800 p-6 rounded-xl shadow-xl border border-red-700
+                          hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+          >
+            <h3 className="text-lg font-semibold text-gray-300">
+              Total Expenses
+            </h3>
+            <p className="text-3xl font-bold text-red-400 mt-2">
+              ₹ {getTotalExpenses()}
+            </p>
             <Link
               to="/manage-expense"
               className="inline-flex items-center mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm
@@ -210,9 +271,13 @@ function Dashboard() {
             </Link>
           </div>
 
-          <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-blue-700
-                          hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-300">Current Balance</h3>
+          <div
+            className="bg-gray-800 p-6 rounded-xl shadow-xl border border-blue-700
+                          hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+          >
+            <h3 className="text-lg font-semibold text-gray-300">
+              Current Balance
+            </h3>
             <p className="text-3xl font-bold text-blue-400 mt-2">
               ₹ {totalIncomeAmount - getTotalExpenses()}
             </p>
@@ -221,7 +286,9 @@ function Dashboard() {
 
         {/* Expense Categories Chart */}
         <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 mb-10">
-          <h2 className="text-2xl font-bold text-blue-400 mb-6 text-center">Expense Breakdown by Category</h2>
+          <h2 className="text-2xl font-bold text-blue-400 mb-6 text-center">
+            Expense Breakdown by Category
+          </h2>
           {getChartData().length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -233,31 +300,53 @@ function Dashboard() {
                   fill="#8884d8"
                   dataKey="value"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  label={({ name, percent }) =>
+                    `${name} (${(percent * 100).toFixed(0)}%)`
+                  }
                 >
                   {getChartData().map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#374151', border: 'none', borderRadius: '8px' }}
-                  itemStyle={{ color: '#E5E7EB' }}
+                  contentStyle={{
+                    backgroundColor: "#374151",
+                    border: "none",
+                    borderRadius: "8px",
+                  }}
+                  itemStyle={{ color: "#E5E7EB" }}
                 />
                 <Legend
-                  wrapperStyle={{ color: '#E5E7EB' }}
-                  formatter={(value, entry, index) => <span style={{ color: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }}>{value}</span>}
+                  wrapperStyle={{ color: "#E5E7EB" }}
+                  formatter={(value, entry, index) => (
+                    <span
+                      style={{
+                        color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+                      }}
+                    >
+                      {value}
+                    </span>
+                  )}
                 />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-gray-400 py-6">No expense data to display chart.</p>
+            <p className="text-center text-gray-400 py-6">
+              No expense data to display chart.
+            </p>
           )}
         </div>
 
         {/* Filters and Search */}
         <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label htmlFor="category-filter" className="block text-gray-300 font-medium text-sm mb-1">
+            <label
+              htmlFor="category-filter"
+              className="block text-gray-300 font-medium text-sm mb-1"
+            >
               <Filter size={16} className="inline mr-1" /> Filter by Category
             </label>
             <select
@@ -265,17 +354,22 @@ function Dashboard() {
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+             focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             >
               <option value="">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat._id} value={cat.name}>{cat.name}</option>
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="start-date" className="block text-gray-300 font-medium text-sm mb-1">
+            <label
+              htmlFor="start-date"
+              className="block text-gray-300 font-medium text-sm mb-1"
+            >
               <Calendar size={16} className="inline mr-1" /> Start Date
             </label>
             <input
@@ -284,12 +378,15 @@ function Dashboard() {
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
 
           <div>
-            <label htmlFor="end-date" className="block text-gray-300 font-medium text-sm mb-1">
+            <label
+              htmlFor="end-date"
+              className="block text-gray-300 font-medium text-sm mb-1"
+            >
               <Calendar size={16} className="inline mr-1" /> End Date
             </label>
             <input
@@ -303,7 +400,10 @@ function Dashboard() {
           </div>
 
           <div>
-            <label htmlFor="search-term" className="block text-gray-300 font-medium text-sm mb-1">
+            <label
+              htmlFor="search-term"
+              className="block text-gray-300 font-medium text-sm mb-1"
+            >
               <Search size={16} className="inline mr-1" /> Search
             </label>
             <input
@@ -321,7 +421,9 @@ function Dashboard() {
         {/* Transaction Table */}
         <div className="bg-gray-800 shadow-xl rounded-xl overflow-hidden border border-gray-700 mt-10">
           <div className="flex justify-between items-center px-6 py-4 bg-gray-700 border-b border-gray-600">
-            <h2 className="text-xl font-bold text-gray-200">Recent Transactions</h2>
+            <h2 className="text-xl font-bold text-gray-200">
+              Recent Transactions
+            </h2>
             <button
               onClick={exportToExcel}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm
@@ -330,7 +432,9 @@ function Dashboard() {
               <Download size={16} className="mr-2" /> Export to Excel
             </button>
           </div>
-          <div className="overflow-x-auto"> {/* Ensures responsiveness for tables */}
+          <div className="overflow-x-auto">
+            {" "}
+            {/* Ensures responsiveness for tables */}
             <table className="w-full table-auto">
               <thead className="bg-gray-700 text-gray-200 text-left">
                 <tr>
@@ -345,17 +449,32 @@ function Dashboard() {
               <tbody>
                 {currentTransactions.length > 0 ? (
                   currentTransactions.map((tx) => (
-                    <tr key={tx._id} className="border-b border-gray-700 hover:bg-gray-700 transition duration-200">
+                    <tr
+                      key={tx._id}
+                      className="border-b border-gray-700 hover:bg-gray-700 transition duration-200"
+                    >
                       <td className="px-4 py-3 text-gray-300">
                         {new Date(tx.date).toLocaleDateString()}
                       </td>
-                      <td className={`px-4 py-3 capitalize font-medium flex items-center ${tx.type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
-                        {tx.type === 'income' ? <ArrowUpCircle size={16} className="mr-1" /> : <ArrowDownCircle size={16} className="mr-1" />}
+                      <td
+                        className={`px-4 py-3 capitalize font-medium flex items-center ${
+                          tx.type === "income"
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {tx.type === "income" ? (
+                          <ArrowUpCircle size={16} className="mr-1" />
+                        ) : (
+                          <ArrowDownCircle size={16} className="mr-1" />
+                        )}
                         {tx.type}
                       </td>
                       <td className="px-4 py-3 text-gray-300">{tx.category}</td>
                       <td className="px-4 py-3 text-gray-300">₹ {tx.amount}</td>
-                      <td className="px-4 py-3 text-gray-300">{tx.description}</td>
+                      <td className="px-4 py-3 text-gray-300">
+                        {tx.description}
+                      </td>
                       <td className="px-4 py-3 space-x-2">
                         <button
                           className="bg-yellow-500 text-white px-3 py-1.5 rounded-lg font-semibold text-xs
@@ -388,12 +507,22 @@ function Dashboard() {
           {/* Pagination Controls */}
           {filteredAndSearchedTransactions.length > transactionsPerPage && (
             <div className="flex justify-center items-center space-x-2 py-4 bg-gray-700 border-t border-gray-600">
-              {[...Array(Math.ceil(filteredAndSearchedTransactions.length / transactionsPerPage)).keys()].map(number => (
+              {[
+                ...Array(
+                  Math.ceil(
+                    filteredAndSearchedTransactions.length / transactionsPerPage
+                  )
+                ).keys(),
+              ].map((number) => (
                 <button
                   key={number + 1}
                   onClick={() => paginate(number + 1)}
                   className={`px-3 py-1 rounded-lg font-semibold text-sm
-                              ${currentPage === number + 1 ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}
+                              ${
+                                currentPage === number + 1
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-gray-600 text-gray-300 hover:bg-gray-500"
+                              }
                               transition duration-200`}
                 >
                   {number + 1}
