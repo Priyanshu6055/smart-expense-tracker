@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import IncomeManager from "./components/IncomeManager";
 import ExpenseManager from "./components/AddExpense";
+import BudgetPage from "./pages/BudgetPage";
 
 function App() {
   return (
@@ -69,6 +70,7 @@ function MainLayout() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/manage-income" element={<IncomeManager />} />
         <Route path="/manage-expense" element={<ExpenseManager />} />
+        <Route path="/budget-page" element={<BudgetPage/>}/>
       </Routes>
 
       <style>
