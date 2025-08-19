@@ -54,11 +54,11 @@ exports.checkBudgetStatus = async (req, res) => {
       const spentData = await Expense.aggregate([
         {
           $match: {
-            userId: req.user._id, // from auth middleware
+            userId: req.user._id, 
             category: b.category,
             date: {
-              $gte: new Date(year, month - 1, 1), // month-1 because JS months are 0-indexed
-              $lte: new Date(year, month, 0),     // last day of month
+              $gte: new Date(year, month - 1, 1), 
+              $lte: new Date(year, month, 0), 
             },
           },
         },

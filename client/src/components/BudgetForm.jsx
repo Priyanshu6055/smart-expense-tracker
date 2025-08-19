@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import axios from "axios";
 import { FiDollarSign, FiCalendar, FiEdit3 } from "react-icons/fi";
 
-// Note: The API_URL and other environment variables are assumed to be
-//       handled by the build process, so we keep the original reference.
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 const months = [
@@ -11,22 +9,20 @@ const months = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-// React Icons for visual appeal, a common pattern in modern UI.
 const iconClass = "text-blue-400 text-xl";
 
 const BudgetForm = ({ onBudgetAdded }) => {
-  // We use state to manage form inputs and to display messages or errors to the user.
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
-  const [month, setMonth] = useState(new Date().getMonth());
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); // Clear previous messages
-    setError("");   // Clear previous errors
+    setMessage(""); 
+    setError("");   
 
     try {
       const res = await axios.post(
@@ -130,7 +126,7 @@ const BudgetForm = ({ onBudgetAdded }) => {
                            hover:border-blue-500"
               >
                 {months.map((m, i) => (
-                  <option key={i} value={i}>{m}</option>
+                  <option key={i + 1} value={i + 1}>{m}</option>
                 ))}
               </select>
             </div>
