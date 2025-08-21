@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import {
   PieChart,
   Pie,
@@ -221,6 +222,7 @@ function Dashboard() {
       className="min-h-screen flex flex-col items-center px-4 py-12 font-inter
                     bg-gradient-to-br from-gray-900 to-blue-950 text-gray-100"
     >
+    <Navbar/>
       <div
         className="max-w-6xl w-full mx-auto p-6
                       transform scale-95 opacity-0 animate-fade-in-up"

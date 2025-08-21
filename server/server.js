@@ -9,6 +9,7 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 const incomeRoutes = require('./routes/incomeRoutes');
 const budgetRoutes = require("./routes/budgetRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 dotenv.config();
 connectDB();
@@ -23,6 +24,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/budget', budgetRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Error Handler
 app.use(errorHandler);
