@@ -9,7 +9,9 @@ function Register() {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
+  
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
+  
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -37,6 +39,11 @@ function Register() {
       if (data.success) {
         setMessage(data.message || "Registration successful!");
         setFormData({ name: "", email: "", password: "" });
+
+        if (data.data?.token) {
+          localStorage.setItem("token", data.data.token);
+          console.log("Saved Token:", data.data.token);
+        }
       } else {
         setError(data.message || "Something went wrong during registration.");
       }

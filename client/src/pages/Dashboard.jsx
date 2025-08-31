@@ -97,10 +97,11 @@ function Dashboard() {
       if (selectedCategory) params.append("category", selectedCategory);
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
-      // Backend should handle search term, or filter locally if backend doesn't support
-      // For now, we'll filter locally for search term.
 
-      const res = await axios.get(url + params.toString(), {
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`;
+
+      const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTransactions(res.data?.data || []);
@@ -111,6 +112,7 @@ function Dashboard() {
       setLoading(false);
     }
   };
+
 
   // Fetch total monthly income
   const fetchTotalMonthlyIncome = async () => {
@@ -502,11 +504,10 @@ function Dashboard() {
                         {new Date(tx.date).toLocaleDateString()}
                       </td>
                       <td
-                        className={`px-4 py-3 capitalize font-medium flex items-center ${
-                          tx.type === "income"
+                        className={`px-4 py-3 capitalize font-medium flex items-center ${tx.type === "income"
                             ? "text-green-400"
                             : "text-red-400"
-                        }`}
+                          }`}
                       >
                         {tx.type === "income" ? (
                           <ArrowUpCircle size={16} className="mr-1" />
@@ -563,11 +564,10 @@ function Dashboard() {
                   key={number + 1}
                   onClick={() => paginate(number + 1)}
                   className={`px-3 py-1 rounded-lg font-semibold text-sm
-                                 ${
-                                   currentPage === number + 1
-                                     ? "bg-blue-600 text-white"
-                                     : "bg-gray-600 text-gray-300 hover:bg-gray-500"
-                                 }
+                                 ${currentPage === number + 1
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-600 text-gray-300 hover:bg-gray-500"
+                    }
                                  transition duration-200`}
                 >
                   {number + 1}
