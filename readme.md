@@ -9,7 +9,7 @@
     <code>npm install</code>
   </li>
   <li><strong>Start the frontend server:</strong><br>
-    <code>npm run start</code>
+    <code>npm run dev</code>
   </li>
 </ol>
 
