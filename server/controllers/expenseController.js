@@ -1,4 +1,5 @@
 const Expense = require("../models/Expense");
+const Income = require("../models/Income");
 
 // @desc    Add a new transaction
 exports.addTransaction = async (req, res) => {
@@ -6,7 +7,7 @@ exports.addTransaction = async (req, res) => {
     const { type, category, amount, date, description } = req.body;
 
     const newExpense = new Expense({
-      userId: req.user.id, // from auth middleware
+      userId: req.user.id,
       type,
       category,
       amount,
@@ -92,5 +93,69 @@ exports.deleteTransaction = async (req, res) => {
     res.json({ success: true, message: "Transaction deleted" });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server Error", error: err.message });
+  }
+};
+
+
+// new - 23-11-25
+
+exports.getMonthlySummary = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({
+        success: false,
+        message: "Month and Year are required",
+      });
+    }
+
+    const start = new Date(`${year}-${month}-01`);
+    const end = new Date(`${year}-${month}-31`);
+
+    // -------- Monthly Income --------
+    const monthlyIncome = await Income.aggregate([
+      {
+        $match: {
+          userId: req.user._id,
+          date: { $gte: start, $lte: end },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+
+    const totalIncome =
+      monthlyIncome.length > 0 ? monthlyIncome[0].total : 0;
+
+    // -------- Monthly Expense --------
+    const monthlyExpense = await Expense.aggregate([
+      {
+        $match: {
+          userId: req.user._id,
+          type: "expense",
+          date: { $gte: start, $lte: end },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+
+    const totalExpense =
+      monthlyExpense.length > 0 ? monthlyExpense[0].total : 0;
+
+    // -------- All monthly transactions --------
+    const transactions = await Expense.find({
+      userId: req.user._id,
+      date: { $gte: start, $lte: end },
+    }).sort({ date: -1 });
+
+    res.status(200).json({
+      success: true,
+      income: totalIncome,
+      expense: totalExpense,
+      balance: totalIncome - totalExpense,
+      transactions,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };
