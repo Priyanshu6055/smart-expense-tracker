@@ -50,6 +50,7 @@ const CATEGORY_COLORS = [
 function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [totalIncomeAmount, setTotalIncomeAmount] = useState(0);
+  const [monthlyExpense, setMonthlyExpense] = useState(0); // <-- NEW
   const [categories, setCategories] = useState([]); // State for available categories
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -86,7 +87,7 @@ function Dashboard() {
     }
   };
 
-  // Fetch transactions with filters
+  // Fetch transactions with filters (for table + chart)
   const fetchTransactions = async () => {
     setLoading(true);
     setError("");
@@ -99,7 +100,9 @@ function Dashboard() {
       if (endDate) params.append("endDate", endDate);
 
       const queryString = params.toString();
-      if (queryString) url += `?${queryString}`;
+      if (queryString) {
+        url += `?${queryString}`;
+      }
 
       const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -113,8 +116,7 @@ function Dashboard() {
     }
   };
 
-
-  // Fetch total monthly income
+  // Fetch total monthly income (unchanged – from /api/income/monthly)
   const fetchTotalMonthlyIncome = async () => {
     const today = new Date();
     const month = String(today.getMonth() + 1).padStart(2, "0");
@@ -126,9 +128,27 @@ function Dashboard() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setTotalIncomeAmount(res.data.totalIncome);
+      setTotalIncomeAmount(res.data.totalIncome || 0);
     } catch (err) {
       console.error("Fetch monthly income error:", err);
+    }
+  };
+
+  // NEW: Fetch monthly expense from /api/expenses/summary
+  const fetchMonthlyExpense = async () => {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const year = today.getFullYear();
+    try {
+      const res = await axios.get(
+        `${API_URL}/api/expenses/summary?month=${month}&year=${year}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setMonthlyExpense(res.data.expense || 0);
+    } catch (err) {
+      console.error("Fetch monthly expense error:", err);
     }
   };
 
@@ -139,6 +159,7 @@ function Dashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchTransactions(); // Re-fetch to update the list
+      fetchMonthlyExpense(); // also refresh monthly expense
       setIsDeleteModalOpen(false); // Close the modal on success
       setTransactionToDelete(null);
     } catch (err) {
@@ -157,7 +178,7 @@ function Dashboard() {
   const handleEdit = (transaction) => {
     setEditingTransaction({
       ...transaction,
-      date: transaction.date.split('T')[0], // Format date for input field
+      date: transaction.date.split("T")[0], // Format date for input field
     });
   };
 
@@ -173,6 +194,7 @@ function Dashboard() {
         }
       );
       fetchTransactions(); // Re-fetch to update the list
+      fetchMonthlyExpense(); // refresh monthly expense
       setEditingTransaction(null); // Close the edit form
     } catch (err) {
       console.error("Update expense error:", err);
@@ -180,6 +202,7 @@ function Dashboard() {
     }
   };
 
+  // Old helper – now used only if you want total from currently fetched transactions
   const getTotalExpenses = () =>
     (transactions || [])
       .filter((tx) => tx.type === "expense")
@@ -230,8 +253,9 @@ function Dashboard() {
 
   useEffect(() => {
     fetchCategories();
-    fetchTransactions();
-    fetchTotalMonthlyIncome();
+    fetchTransactions();        // for table + filters
+    fetchTotalMonthlyIncome();  // for monthly income
+    fetchMonthlyExpense();      // for monthly expenses
   }, [token, selectedCategory, startDate, endDate]); // Re-fetch when filters change
 
   if (loading)
@@ -304,10 +328,10 @@ function Dashboard() {
                          hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1"
           >
             <h3 className="text-lg font-semibold text-gray-300">
-              Total Expenses
+              Total Expenses (This Month)
             </h3>
             <p className="text-3xl font-bold text-red-400 mt-2">
-              ₹ {getTotalExpenses()}
+              ₹ {monthlyExpense}
             </p>
             <Link
               to="/manage-expense"
@@ -323,10 +347,10 @@ function Dashboard() {
                          hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1"
           >
             <h3 className="text-lg font-semibold text-gray-300">
-              Current Balance
+              Current Balance (This Month)
             </h3>
             <p className="text-3xl font-bold text-blue-400 mt-2">
-              ₹ {totalIncomeAmount - getTotalExpenses()}
+              ₹ {totalIncomeAmount - monthlyExpense}
             </p>
           </div>
         </div>
@@ -480,8 +504,6 @@ function Dashboard() {
             </button>
           </div>
           <div className="overflow-x-auto">
-            {" "}
-            {/* Ensures responsiveness for tables */}
             <table className="w-full table-auto">
               <thead className="bg-gray-700 text-gray-200 text-left">
                 <tr>
@@ -504,10 +526,11 @@ function Dashboard() {
                         {new Date(tx.date).toLocaleDateString()}
                       </td>
                       <td
-                        className={`px-4 py-3 capitalize font-medium flex items-center ${tx.type === "income"
+                        className={`px-4 py-3 capitalize font-medium flex items-center ${
+                          tx.type === "income"
                             ? "text-green-400"
                             : "text-red-400"
-                          }`}
+                        }`}
                       >
                         {tx.type === "income" ? (
                           <ArrowUpCircle size={16} className="mr-1" />
@@ -556,7 +579,8 @@ function Dashboard() {
               {[
                 ...Array(
                   Math.ceil(
-                    filteredAndSearchedTransactions.length / transactionsPerPage
+                    filteredAndSearchedTransactions.length /
+                      transactionsPerPage
                   )
                 ).keys(),
               ].map((number) => (
@@ -564,10 +588,11 @@ function Dashboard() {
                   key={number + 1}
                   onClick={() => paginate(number + 1)}
                   className={`px-3 py-1 rounded-lg font-semibold text-sm
-                                 ${currentPage === number + 1
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-600 text-gray-300 hover:bg-gray-500"
-                    }
+                                 ${
+                                   currentPage === number + 1
+                                     ? "bg-blue-600 text-white"
+                                     : "bg-gray-600 text-gray-300 hover:bg-gray-500"
+                                 }
                                  transition duration-200`}
                 >
                   {number + 1}
