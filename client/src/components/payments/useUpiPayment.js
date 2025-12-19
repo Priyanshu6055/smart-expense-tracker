@@ -13,12 +13,14 @@ export default function useUpiPayment(API_URL, token, onSuccess) {
     );
 
     setPendingExpense(res.data.data.expenseId);
+
+    // redirect to UPI
     window.location.href = res.data.data.upiUrl;
   };
 
   const confirmPayment = async (status) => {
     await axios.patch(
-      `${API_URL}/api/expenses/${pendingExpense}/confirm`,
+      `${API_URL}/api/expenses/upi/confirm/${pendingExpense}`,
       { status },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -29,7 +31,10 @@ export default function useUpiPayment(API_URL, token, onSuccess) {
   };
 
   useEffect(() => {
-    const onFocus = () => pendingExpense && setShowConfirm(true);
+    const onFocus = () => {
+      if (pendingExpense) setShowConfirm(true);
+    };
+
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [pendingExpense]);
