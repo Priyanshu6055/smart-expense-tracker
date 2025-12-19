@@ -5,6 +5,8 @@ const {
   updateTransaction,
   deleteTransaction,
   getMonthlySummary,
+  initiateUpiExpense,
+  confirmUpiExpense,
 } = require("../controllers/expenseController");
 
 const { protect } = require("../middlewares/authMiddleware");
@@ -21,9 +23,8 @@ router.put("/:id", protect, updateTransaction);
 
 router.delete("/:id", protect, deleteTransaction);
 
-router.post("/upi/initiate", protect, initiateUpiPayment);
+router.post("/upi/initiate", protect, initiateUpiExpense);
 
-router.patch("/upi/confirm/:id", protect, confirmUpiPayment);
-
+router.patch("/upi/confirm/:id", protect, confirmUpiExpense);
 
 module.exports = router;
