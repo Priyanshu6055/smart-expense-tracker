@@ -55,7 +55,6 @@ exports.getTransactions = async (req, res) => {
 };
 
 
-
 // @desc    Update a transaction
 exports.updateTransaction = async (req, res) => {
   try {
@@ -76,7 +75,6 @@ exports.updateTransaction = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error", error: err.message });
   }
 };
-
 
 
 // @desc    Delete a transaction
@@ -161,9 +159,7 @@ exports.getMonthlySummary = async (req, res) => {
 };
 
 
-
 // new methods 19/12/25
-
 
 
 /* ======================================================
@@ -180,7 +176,7 @@ exports.initiateUpiExpense = async (req, res) => {
       });
     }
 
-    // Create expense as PENDING
+    // ✅ Create expense as PENDING
     const expense = await Expense.create({
       userId: req.user.id,
       type: "expense",
@@ -191,25 +187,23 @@ exports.initiateUpiExpense = async (req, res) => {
       paymentStatus: "pending",
     });
 
-    // Generate UPI intent
-    const upiUrl = `upi://pay?pa=merchant@upi&pn=ExpenseTracker&am=${amount}&cu=INR`;
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message: "UPI payment initiated",
+      message: "Expense created as pending",
       data: {
         expenseId: expense._id,
-        upiUrl,
+        amount,
       },
     });
+
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error",
-      error: err.message,
     });
   }
 };
+
 
 /* ======================================================
    2️⃣ CONFIRM OR FAIL UPI PAYMENT

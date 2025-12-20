@@ -5,24 +5,27 @@ export default function useUpiPayment(API_URL, token, onSuccess) {
   const [pendingExpense, setPendingExpense] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  // 1️⃣ Create pending expense
   const initiatePayment = async (payload) => {
     const res = await axios.post(
       `${API_URL}/api/expenses/upi/initiate`,
       payload,
-      { headers: { Authorization: `Bearer ${token}` } }
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
 
     setPendingExpense(res.data.data.expenseId);
-
-    // redirect to UPI
-    window.location.href = res.data.data.upiUrl;
   };
 
+  // 2️⃣ User confirmation after comeback
   const confirmPayment = async (status) => {
     await axios.patch(
       `${API_URL}/api/expenses/upi/confirm/${pendingExpense}`,
       { status },
-      { headers: { Authorization: `Bearer ${token}` } }
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
 
     setPendingExpense(null);
@@ -30,6 +33,7 @@ export default function useUpiPayment(API_URL, token, onSuccess) {
     onSuccess?.();
   };
 
+  // 3️⃣ Detect return from UPI app
   useEffect(() => {
     const onFocus = () => {
       if (pendingExpense) setShowConfirm(true);
