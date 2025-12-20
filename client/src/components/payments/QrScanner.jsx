@@ -1,26 +1,40 @@
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import { useEffect } from "react";
 
 export default function QrScanner({ onScan, onError }) {
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { fps: 10, qrbox: 250 },
-      false
-    );
+    const html5QrCode = new Html5Qrcode("qr-reader");
 
-    scanner.render(
-      (decodedText) => {
-        onScan(decodedText);
-        scanner.clear();
-      },
-      (err) => onError?.(err)
-    );
+    html5QrCode
+      .start(
+        { facingMode: "environment" }, // ✅ BACK CAMERA
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        (decodedText) => {
+          onScan(decodedText);
+          html5QrCode.stop().catch(() => {});
+        },
+        (errorMessage) => {
+          // ignore scan errors
+        }
+      )
+      .catch((err) => {
+        onError?.(err);
+      });
 
     return () => {
-      scanner.clear().catch(() => {});
+      html5QrCode.stop().catch(() => {});
     };
   }, []);
 
-  return <div id="qr-reader" className="mt-4" />;
+  return (
+    <div className="mt-4">
+      <div id="qr-reader" />
+      <p className="text-xs text-gray-400 text-center mt-2">
+        Using back camera for scanning
+      </p>
+    </div>
+  );
 }
