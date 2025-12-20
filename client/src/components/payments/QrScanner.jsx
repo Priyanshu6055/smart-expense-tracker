@@ -3,29 +3,48 @@ import { useEffect } from "react";
 
 export default function QrScanner({ onScan, onError }) {
   useEffect(() => {
-    const html5QrCode = new Html5Qrcode("qr-reader");
+    let html5QrCode;
 
-    html5QrCode
-      .start(
-        { facingMode: "environment" }, // ✅ BACK CAMERA
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        (decodedText) => {
-          onScan(decodedText);
-          html5QrCode.stop().catch(() => {});
-        },
-        (errorMessage) => {
-          // ignore scan errors
+    const startScanner = async () => {
+      try {
+        // 1️⃣ Get camera list
+        const devices = await Html5Qrcode.getCameras();
+
+        if (!devices || devices.length === 0) {
+          throw new Error("No cameras found");
         }
-      )
-      .catch((err) => {
+
+        // 2️⃣ Prefer BACK camera
+        const backCamera =
+          devices.find((d) =>
+            d.label.toLowerCase().includes("back")
+          ) || devices[devices.length - 1]; // fallback
+
+        // 3️⃣ Start scanner
+        html5QrCode = new Html5Qrcode("qr-reader");
+
+        await html5QrCode.start(
+          backCamera.id,
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          (decodedText) => {
+            onScan(decodedText);
+            html5QrCode.stop().catch(() => {});
+          }
+        );
+      } catch (err) {
         onError?.(err);
-      });
+      }
+    };
+
+    startScanner();
 
     return () => {
-      html5QrCode.stop().catch(() => {});
+      if (html5QrCode) {
+        html5QrCode.stop().catch(() => {});
+      }
     };
   }, []);
 
