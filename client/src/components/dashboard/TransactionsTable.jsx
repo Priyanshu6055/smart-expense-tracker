@@ -47,7 +47,7 @@ export default function TransactionsTable({
                   <td className="px-4 py-3">{tx.category}</td>
                   <td className="px-4 py-3">₹ {tx.amount}</td>
                   <td className="px-4 py-3">{tx.description}</td>
-                  <td className="px-4 py-3 space-x-2">
+                  <td className="px-4 py-3 space-x-2 flex">
                     <button
                       onClick={() => onEdit(tx)}
                       className="bg-yellow-500 px-3 py-1 rounded text-xs"

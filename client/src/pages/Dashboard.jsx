@@ -208,7 +208,7 @@ function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-950 text-gray-100 px-4 py-12">
       <Navbar />
 
-      <div className="max-w-6xl mx-auto">
+      <div className="mt-6 max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold text-blue-400 mb-8 text-center">
           Dashboard
         </h1>

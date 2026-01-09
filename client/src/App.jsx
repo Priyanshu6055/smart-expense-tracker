@@ -1,5 +1,11 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useLocation,
+} from "react-router-dom";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
@@ -26,9 +32,11 @@ function MainLayout() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-950 font-inter">
       {showNav && (
-        <nav className="bg-gray-800 p-4 md:p-6 shadow-xl flex justify-center items-center space-x-6 md:space-x-12
+        <nav
+          className="bg-gray-800 p-4 md:p-6 shadow-xl flex justify-center items-center space-x-6 md:space-x-12
                         transform -translate-y-full opacity-0 animate-slide-down-fade
-                        border-b-4 border-blue-700">
+                        border-b-4 border-blue-700"
+        >
           {/* Home Link */}
           <Link
             to="/"
@@ -71,8 +79,8 @@ function MainLayout() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/manage-income" element={<IncomeManager />} />
         <Route path="/manage-expense" element={<ExpenseManager />} />
-        <Route path="/budget-page" element={<BudgetPage/>}/>
-        <Route path="/profile" element={<Profile/>}/>
+        <Route path="/budget-page" element={<BudgetPage />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
 
       <style>

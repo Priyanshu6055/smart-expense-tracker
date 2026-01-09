@@ -12,7 +12,7 @@ export default function FiltersBar({
   setSearchTerm,
 }) {
   return (
-    <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 mb-10 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Category Filter */}
       <div>
         <label

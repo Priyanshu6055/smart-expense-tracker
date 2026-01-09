@@ -48,7 +48,7 @@ export default function QrScanner({ onScan, onError }) {
         id="qr-reader"
         style={{
           width: "100%",
-          minHeight: "320px",
+          // minHeight: "320px",
         }}
       />
 
