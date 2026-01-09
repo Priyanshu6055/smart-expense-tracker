@@ -35,7 +35,7 @@ export default function QrScanner({ onScan, onError }) {
   };
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 ">
       {/* REQUIRED user gesture for iOS */}
       <button
         onClick={startScan}
@@ -45,6 +45,7 @@ export default function QrScanner({ onScan, onError }) {
       </button>
 
       <div
+      className="scale-[0.8]"
         id="qr-reader"
         style={{
           width: "100%",

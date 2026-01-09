@@ -60,7 +60,7 @@ export default function FiltersBar({
       </div>
 
       {/* Start Date */}
-      <div>
+      <div className="overflow-hidden">
         <label
           htmlFor="start-date"
           className="block text-gray-300 font-medium text-[11px] md:text-sm mb-0.5 md:mb-1"
@@ -74,22 +74,24 @@ export default function FiltersBar({
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
           className="
-            w-full
-            px-2.5 md:px-4
-            py-1.5 md:py-2
-            text-xs md:text-sm
-            border border-gray-600
-            rounded-md md:rounded-lg
-            bg-gray-700 text-white
-            focus:ring-2 focus:ring-blue-500
-            focus:border-transparent
-            outline-none
-          "
+      w-full
+      min-w-0
+      px-1 md:px-4
+      py-1 md:py-2
+      text-[11px] md:text-sm
+      border border-gray-600
+      rounded-md md:rounded-lg
+      bg-gray-700 text-white
+      focus:ring-2 focus:ring-blue-500
+      focus:border-transparent
+      outline-none
+      overflow-hidden
+    "
         />
       </div>
 
       {/* End Date */}
-      <div>
+      <div className="overflow-hidden">
         <label
           htmlFor="end-date"
           className="block text-gray-300 font-medium text-[11px] md:text-sm mb-0.5 md:mb-1"
@@ -103,17 +105,19 @@ export default function FiltersBar({
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
           className="
-            w-full
-            px-2.5 md:px-4
-            py-1.5 md:py-2
-            text-xs md:text-sm
-            border border-gray-600
-            rounded-md md:rounded-lg
-            bg-gray-700 text-white
-            focus:ring-2 focus:ring-blue-500
-            focus:border-transparent
-            outline-none
-          "
+      w-full
+      min-w-0
+      px-1 md:px-4
+      py-1 md:py-2
+      text-[11px] md:text-sm
+      border border-gray-600
+      rounded-md md:rounded-lg
+      bg-gray-700 text-white
+      focus:ring-2 focus:ring-blue-500
+      focus:border-transparent
+      outline-none
+      overflow-hidden
+    "
         />
       </div>
 

@@ -38,9 +38,15 @@ export default function TransactionsTable({
                   </td>
                   <td className="px-4 py-3 flex items-center">
                     {tx.type === "income" ? (
-                      <ArrowUpCircle size={16} className="mr-1 text-green-400" />
+                      <ArrowUpCircle
+                        size={16}
+                        className="mr-1 text-green-400"
+                      />
                     ) : (
-                      <ArrowDownCircle size={16} className="mr-1 text-red-400" />
+                      <ArrowDownCircle
+                        size={16}
+                        className="mr-1 text-red-400"
+                      />
                     )}
                     {tx.type}
                   </td>
@@ -75,20 +81,29 @@ export default function TransactionsTable({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 py-4 bg-gray-700">
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i}
-              onClick={() => paginate(i + 1)}
-              className={`px-3 py-1 rounded ${
-                currentPage === i + 1
-                  ? "bg-blue-600"
-                  : "bg-gray-600 hover:bg-gray-500"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+        <div className="bg-gray-700 py-3">
+          <div className="flex justify-center gap-2 overflow-x-auto px-4 scrollbar-hide">
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => paginate(i + 1)}
+                className={`
+            flex items-center justify-center
+            min-w-[32px] h-8
+            text-xs md:text-sm
+            rounded
+            transition
+            ${
+              currentPage === i + 1
+                ? "bg-blue-600"
+                : "bg-gray-600 hover:bg-gray-500"
+            }
+          `}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
