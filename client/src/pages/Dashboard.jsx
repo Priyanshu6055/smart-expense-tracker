@@ -8,7 +8,6 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 
 // -------- Payments --------
-import UpiPayButton from "../components/payments/UpiPayButton";
 import UpiPayModal from "../components/payments/UpiPayModal";
 import PaymentConfirmModal from "../components/payments/PaymentConfirmModal";
 import useUpiPayment from "../components/payments/useUpiPayment";
@@ -151,7 +150,16 @@ function Dashboard() {
     setCurrentPage(1);
   }, [selectedCategory, startDate, endDate]);
 
-  // ---------------- DERIVED DATA (MEMOIZED) ----------------
+  // ---------------- RESET FILTERS ----------------
+  const handleResetFilters = useCallback(() => {
+    setSelectedCategory("");
+    setStartDate("");
+    setEndDate("");
+    setSearchTerm("");
+    setCurrentPage(1);
+  }, []);
+
+  // ---------------- DERIVED DATA ----------------
   const filteredTransactions = useMemo(() => {
     return transactions.filter(
       (tx) =>
@@ -166,9 +174,8 @@ function Dashboard() {
     return filteredTransactions.slice(indexOfFirst, indexOfLast);
   }, [filteredTransactions, currentPage]);
 
-  // ---------------- CRUD HANDLERS (MEMOIZED) ----------------
+  // ---------------- CRUD HANDLERS ----------------
   const handleEdit = useCallback((tx) => {
-    if (!tx) return;
     setEditingTransaction({ ...tx, date: tx.date?.split("T")[0] });
   }, []);
 
@@ -210,7 +217,6 @@ function Dashboard() {
     fetchMonthlyExpense();
   });
 
-  // ---------------- LOADING ----------------
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-blue-300">
@@ -252,6 +258,7 @@ function Dashboard() {
           setEndDate={setEndDate}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
+          onReset={handleResetFilters}
         />
 
         <TransactionsTable
