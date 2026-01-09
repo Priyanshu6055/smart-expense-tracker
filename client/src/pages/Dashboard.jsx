@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback
+} from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
 // -------- Payments --------
@@ -55,7 +59,7 @@ function Dashboard() {
     );
   }
 
-  // ---------------- FETCH FUNCTIONS ----------------
+  // ---------------- HELPERS ----------------
   const authHeader = {
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -65,6 +69,7 @@ function Dashboard() {
     return err?.response?.data?.message || fallback;
   };
 
+  // ---------------- FETCH FUNCTIONS ----------------
   const fetchCategories = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/categories`, authHeader);
@@ -126,11 +131,51 @@ function Dashboard() {
     }
   };
 
-  // ---------------- CRUD HANDLERS ----------------
-  const handleEdit = (tx) => {
+  // ---------------- INITIAL LOAD (ONCE) ----------------
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      setError(null);
+      await Promise.all([
+        fetchCategories(),
+        fetchTotalMonthlyIncome(),
+        fetchMonthlyExpense(),
+      ]);
+      setLoading(false);
+    })();
+  }, []);
+
+  // ---------------- FILTER-BASED FETCH ----------------
+  useEffect(() => {
+    fetchTransactions();
+    setCurrentPage(1);
+  }, [selectedCategory, startDate, endDate]);
+
+  // ---------------- DERIVED DATA (MEMOIZED) ----------------
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(
+      (tx) =>
+        tx?.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tx?.category?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [transactions, searchTerm]);
+
+  const currentTransactions = useMemo(() => {
+    const indexOfLast = currentPage * transactionsPerPage;
+    const indexOfFirst = indexOfLast - transactionsPerPage;
+    return filteredTransactions.slice(indexOfFirst, indexOfLast);
+  }, [filteredTransactions, currentPage]);
+
+  // ---------------- CRUD HANDLERS (MEMOIZED) ----------------
+  const handleEdit = useCallback((tx) => {
     if (!tx) return;
     setEditingTransaction({ ...tx, date: tx.date?.split("T")[0] });
-  };
+  }, []);
+
+  const handleDeleteClick = useCallback((tx) => {
+    setTransactionToDelete(tx);
+    setIsDeleteModalOpen(true);
+  }, []);
 
   const handleUpdate = async (updatedTx) => {
     try {
@@ -159,40 +204,11 @@ function Dashboard() {
     }
   };
 
-  // ---------------- FILTER + PAGINATION ----------------
-  const filteredTransactions = transactions.filter(
-    (tx) =>
-      tx?.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tx?.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const indexOfLast = currentPage * transactionsPerPage;
-  const indexOfFirst = indexOfLast - transactionsPerPage;
-  const currentTransactions = filteredTransactions.slice(
-    indexOfFirst,
-    indexOfLast
-  );
-
   // ---------------- UPI PAYMENT ----------------
   const upi = useUpiPayment(API_URL, token, () => {
     fetchTransactions();
     fetchMonthlyExpense();
   });
-
-  // ---------------- EFFECT ----------------
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      setError(null);
-      await Promise.all([
-        fetchCategories(),
-        fetchTransactions(),
-        fetchTotalMonthlyIncome(),
-        fetchMonthlyExpense(),
-      ]);
-      setLoading(false);
-    })();
-  }, [selectedCategory, startDate, endDate]);
 
   // ---------------- LOADING ----------------
   if (loading) {
@@ -224,10 +240,10 @@ function Dashboard() {
           totalExpense={monthlyExpense}
         />
 
-        <ExpenseChart transactions={transactions || []} />
+        <ExpenseChart transactions={transactions} />
 
         <FiltersBar
-          categories={categories || []}
+          categories={categories}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
           startDate={startDate}
@@ -239,16 +255,13 @@ function Dashboard() {
         />
 
         <TransactionsTable
-          transactions={currentTransactions || []}
+          transactions={currentTransactions}
           currentPage={currentPage}
           totalItems={filteredTransactions.length}
           itemsPerPage={transactionsPerPage}
           paginate={setCurrentPage}
           onEdit={handleEdit}
-          onDelete={(tx) => {
-            setTransactionToDelete(tx);
-            setIsDeleteModalOpen(true);
-          }}
+          onDelete={handleDeleteClick}
         />
       </div>
 
