@@ -35,17 +35,17 @@ export default function QrScanner({ onScan, onError }) {
   };
 
   return (
-    <div className="mt-4 ">
+    <div className="">
       {/* REQUIRED user gesture for iOS */}
       <button
         onClick={startScan}
-        className="w-full mb-3 bg-purple-600 py-2 rounded text-white font-semibold"
+        className="w-full bg-purple-600 py-2 rounded text-white font-semibold"
       >
         Start QR Scan
       </button>
 
       <div
-      className="scale-[0.8]"
+      className="scale-[0.9]"
         id="qr-reader"
         style={{
           width: "100%",
@@ -53,7 +53,7 @@ export default function QrScanner({ onScan, onError }) {
         }}
       />
 
-      <p className="text-xs text-gray-400 text-center mt-2">
+      <p className="text-xs text-gray-400 text-center">
         iPhone tip: hold QR steady, good lighting required
       </p>
     </div>

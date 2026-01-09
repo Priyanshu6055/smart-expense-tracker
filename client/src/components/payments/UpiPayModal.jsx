@@ -60,18 +60,18 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
           <X size={20} />
         </button>
 
-        <h2 className="text-xl text-purple-400 font-bold mb-4 text-center">
+        <h2 className="text-xl text-purple-400 font-bold mb-1 text-center">
           Pay via UPI
         </h2>
 
         {error && (
-          <p className="text-red-400 text-sm text-center mb-3">{error}</p>
+          <p className="text-red-400 text-sm text-center mb-2">{error}</p>
         )}
 
         {/* 🔍 Scan QR */}
         <button
           onClick={() => setShowScanner(true)}
-          className="w-full mb-3 bg-gray-700 py-2 rounded text-white hover:bg-gray-600 transition"
+          className="w-full mb-1 bg-gray-700 py-2 rounded text-white hover:bg-gray-600 transition"
         >
           Scan QR to auto-fill UPI ID
         </button>
@@ -98,11 +98,11 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
           placeholder="UPI ID (e.g. name@upi)"
           value={upiId}
           onChange={(e) => setUpiId(e.target.value)}
-          className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
+          className="w-full mb-2 p-2 rounded bg-gray-700 text-white"
         />
 
         {/* 💰 Amount */}
-        <div className="flex items-center gap-2 mb-3 bg-gray-700 p-2 rounded">
+        <div className="flex items-center gap-2 mb-2 bg-gray-700 p-2 rounded">
           <FaRupeeSign />
           <input
             type="number"
@@ -117,7 +117,7 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
+          className="w-full mb-2 p-2 rounded bg-gray-700 text-white"
         >
           <option value="">Select Category</option>
           {categories.map((c, i) => (
@@ -132,11 +132,11 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
           placeholder="Description (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full mb-4 p-2 rounded bg-gray-700 text-white"
+          className="w-full mb-2 p-2 rounded bg-gray-700 text-white"
         />
 
         {/* 🔥 UPI App Selection */}
-        <div className="flex justify-between gap-3 mb-4">
+        <div className="flex justify-between gap-3 mb-2">
           {UPI_APPS.map((app) => (
             <button
               key={app.id}
