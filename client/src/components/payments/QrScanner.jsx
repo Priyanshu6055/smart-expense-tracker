@@ -1,7 +1,7 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useRef } from "react";
 
-export default function QrScanner({ onScan, onError }) {
+export default function QrScanner({ onScan }) {
   const scannerRef = useRef(null);
 
   const startScan = () => {
@@ -11,12 +11,10 @@ export default function QrScanner({ onScan, onError }) {
       "qr-reader",
       {
         fps: 10,
-        qrbox: { width: 280, height: 280 }, // ✅ bigger box helps iOS
+        qrbox: { width: 280, height: 280 },
         rememberLastUsedCamera: true,
-
-        // ✅ CRITICAL FIX FOR iOS
         experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true,
+          useBarCodeDetectorIfSupported: true, // ✅ iOS fix
         },
       },
       false
@@ -28,15 +26,12 @@ export default function QrScanner({ onScan, onError }) {
         scannerRef.current.clear().catch(() => {});
         scannerRef.current = null;
       },
-      (err) => {
-        // ignore scan errors
-      }
+      () => {}
     );
   };
 
   return (
-    <div className="">
-      {/* REQUIRED user gesture for iOS */}
+    <div>
       <button
         onClick={startScan}
         className="w-full bg-purple-600 py-2 rounded text-white font-semibold"
@@ -44,17 +39,10 @@ export default function QrScanner({ onScan, onError }) {
         Start QR Scan
       </button>
 
-      <div
-      className="scale-[0.9]"
-        id="qr-reader"
-        style={{
-          width: "100%",
-          // minHeight: "320px",
-        }}
-      />
+      <div id="qr-reader" className="scale-[0.9]" />
 
       <p className="text-xs text-gray-400 text-center">
-        iPhone tip: hold QR steady, good lighting required
+        iPhone tip: hold QR steady with good lighting
       </p>
     </div>
   );

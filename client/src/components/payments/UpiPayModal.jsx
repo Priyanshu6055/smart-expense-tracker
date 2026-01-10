@@ -1,29 +1,25 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import { SiGooglepay, SiPaytm, SiPhonepe } from "react-icons/si";
 import { FaRupeeSign } from "react-icons/fa";
 
 import QrScanner from "./QrScanner";
 import { extractUpiFromQr } from "./upi.utils";
 
-const UPI_APPS = [
-  { id: "PHONEPE", label: "PhonePe", icon: <SiPhonepe size={28} /> },
-  { id: "GPAY", label: "Google Pay", icon: <SiGooglepay size={28} /> },
-  { id: "PAYTM", label: "Paytm", icon: <SiPaytm size={28} /> },
-];
-
 export default function UpiPayModal({ open, onClose, categories, onPay }) {
   const [upiId, setUpiId] = useState("");
+  const [payeeName, setPayeeName] = useState(""); // ✅ dynamic pn
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedApp, setSelectedApp] = useState("PHONEPE");
   const [error, setError] = useState("");
   const [showScanner, setShowScanner] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   if (!open) return null;
 
   const handlePay = async () => {
+    if (paying) return;
+
     if (!upiId || !amount || !category) {
       setError("UPI ID, amount and category are required");
       return;
@@ -34,25 +30,49 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
       return;
     }
 
+    const amt = Number(amount);
+    if (isNaN(amt) || amt <= 0) {
+      setError("Invalid amount");
+      return;
+    }
+
+    const finalAmount = amt.toFixed(2);
+
+    // ✅ SAFE fallback if pn missing
+    const finalPayeeName =
+      payeeName ||
+      upiId.split("@")[0].replace(/[^a-zA-Z ]/g, "") ||
+      "UPI Payment";
+
+    const txnNote = `Expense_${Date.now()}`;
+
     setError("");
+    setPaying(true);
 
     // 1️⃣ Create pending expense
-    await onPay({ amount, category, description });
+    await onPay({
+      amount: finalAmount,
+      category,
+      description,
+    });
 
-    // 2️⃣ Build UPI intent (FULL CONTROL)
-    const upiUrl = `upi://pay?pa=${encodeURIComponent(
-      upiId
-    )}&am=${encodeURIComponent(amount)}&cu=INR`;
+    // 2️⃣ SAFE UPI URL (ANTI-FRAUD COMPLIANT)
+    const upiUrl =
+      `upi://pay` +
+      `?pa=${encodeURIComponent(upiId)}` +
+      `&pn=${encodeURIComponent(finalPayeeName)}` +
+      `&am=${finalAmount}` +
+      `&cu=INR` +
+      `&tn=${encodeURIComponent(txnNote)}`;
 
-    // 3️⃣ Redirect to UPI app
+    // 3️⃣ Redirect ONCE
     window.location.href = upiUrl;
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 ">
-      <div className="bg-gray-800 p-6 rounded-xl w-full max-w-sm relative scale-[0.6]">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+      <div className="bg-gray-800 p-6 rounded-xl w-full max-w-sm relative">
 
-        {/* ❌ Close */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-400 hover:text-white"
@@ -60,7 +80,7 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
           <X size={20} />
         </button>
 
-        <h2 className="text-xl text-purple-400 font-bold mb-1 text-center">
+        <h2 className="text-xl text-purple-400 font-bold mb-2 text-center">
           Pay via UPI
         </h2>
 
@@ -68,40 +88,35 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
           <p className="text-red-400 text-sm text-center mb-2">{error}</p>
         )}
 
-        {/* 🔍 Scan QR */}
         <button
           onClick={() => setShowScanner(true)}
-          className="w-full mb-1 bg-gray-700 py-2 rounded text-white hover:bg-gray-600 transition"
+          className="w-full mb-2 bg-gray-700 py-2 rounded text-white"
         >
-          Scan QR to auto-fill UPI ID
+          Scan QR to auto-fill UPI
         </button>
 
-        {/* 📷 QR Scanner */}
         {showScanner && (
           <QrScanner
             onScan={(text) => {
-              const extractedUpi = extractUpiFromQr(text);
-
-              if (extractedUpi) {
-                setUpiId(extractedUpi);
+              const data = extractUpiFromQr(text);
+              if (data?.pa) {
+                setUpiId(data.pa);
+                setPayeeName(data.pn || "");
                 setShowScanner(false);
               } else {
                 setError("Invalid UPI QR code");
               }
             }}
-            onError={() => setError("Camera error or permission denied")}
           />
         )}
 
-        {/* 🔹 UPI ID */}
         <input
-          placeholder="UPI ID (e.g. name@upi)"
+          placeholder="UPI ID (name@upi)"
           value={upiId}
           onChange={(e) => setUpiId(e.target.value)}
           className="w-full mb-2 p-2 rounded bg-gray-700 text-white"
         />
 
-        {/* 💰 Amount */}
         <div className="flex items-center gap-2 mb-2 bg-gray-700 p-2 rounded">
           <FaRupeeSign />
           <input
@@ -113,7 +128,6 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
           />
         </div>
 
-        {/* 📂 Category */}
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
@@ -127,39 +141,21 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
           ))}
         </select>
 
-        {/* 📝 Description */}
         <input
           placeholder="Description (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full mb-2 p-2 rounded bg-gray-700 text-white"
+          className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
         />
 
-        {/* 🔥 UPI App Selection */}
-        <div className="flex justify-between gap-3 mb-2">
-          {UPI_APPS.map((app) => (
-            <button
-              key={app.id}
-              onClick={() => setSelectedApp(app.id)}
-              className={`
-                flex-1 flex flex-col items-center gap-1 p-3 rounded-lg border
-                ${selectedApp === app.id
-                  ? "border-purple-500 bg-gray-700"
-                  : "border-gray-600 bg-gray-800"}
-              `}
-            >
-              {app.icon}
-              <span className="text-xs">{app.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* 🚀 PAY */}
         <button
+          disabled={paying}
           onClick={handlePay}
-          className="w-full bg-purple-600 py-2 rounded font-semibold hover:bg-purple-700 transition"
+          className={`w-full py-2 rounded font-semibold ${
+            paying ? "bg-gray-600" : "bg-purple-600 hover:bg-purple-700"
+          }`}
         >
-          Pay & Open UPI App
+          {paying ? "Opening UPI…" : "Pay & Open UPI App"}
         </button>
       </div>
     </div>
