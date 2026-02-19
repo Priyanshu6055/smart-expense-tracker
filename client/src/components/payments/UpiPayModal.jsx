@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Smartphone, ScanLine, IndianRupee } from "lucide-react";
-import QrScanner from "./QrScanner";
+import QrScanModal from "./QrScanModal";
 import { extractUpiFromQr } from "./upi.utils";
 
 export default function UpiPayModal({ open, onClose, categories, onPay }) {
@@ -10,7 +10,7 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
-  const [showScanner, setShowScanner] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [paying, setPaying] = useState(false);
 
   if (!open) return null;
@@ -98,28 +98,22 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
         )}
 
         <button
-          onClick={() => setShowScanner(true)}
+          onClick={() => setIsQrModalOpen(true)}
           className="w-full mb-4 bg-secondary/50 text-foreground border border-border/50 py-3 rounded-xl hover:bg-secondary/80 transition-all duration-200 text-sm font-semibold active:scale-[0.98] flex items-center justify-center gap-2 group shadow-sm hover:shadow-md"
         >
           <ScanLine size={16} className="text-primary group-hover:scale-110 transition-transform" /> Scan QR Autofill
         </button>
 
-        {showScanner && (
-          <div className="mb-4 rounded-xl overflow-hidden border border-border shadow-inner">
-            <QrScanner
-              onScan={(text) => {
-                const data = extractUpiFromQr(text);
-                if (data?.pa) {
-                  setUpiId(data.pa);
-                  setPayeeName(data.pn || "");
-                  setShowScanner(false);
-                } else {
-                  setError("Invalid UPI QR code");
-                }
-              }}
-            />
-          </div>
-        )}
+        <QrScanModal
+          open={isQrModalOpen}
+          onClose={() => setIsQrModalOpen(false)}
+          onScanSuccess={(data) => {
+            setUpiId(data.pa);
+            setPayeeName(data.pn || "");
+            setError("");
+          }}
+          onError={(err) => setError(err)}
+        />
 
         <div className="space-y-3">
           <div className="relative">

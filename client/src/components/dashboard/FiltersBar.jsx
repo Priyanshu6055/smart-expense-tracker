@@ -13,14 +13,14 @@ export default function FiltersBar({
   onReset,
 }) {
   const inputClass =
-    "w-full px-4 py-2.5 text-sm bg-background text-foreground rounded-xl border border-input focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all duration-200 placeholder:text-muted-foreground shadow-sm";
+    "w-full px-3 sm:px-4 py-2.5 text-sm bg-background text-foreground rounded-xl border border-input focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all duration-200 placeholder:text-muted-foreground shadow-sm";
 
   const labelClass =
-    "block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5";
+    "block text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5";
 
   return (
-    <div className="bg-card p-6 md:p-8 rounded-2xl shadow-xl border border-border/50 mb-8 animate-fade-in-up-1">
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-xl border border-border/50 mb-8 animate-fade-in-up-1">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {/* Category */}
         <div className="space-y-1">
           <label className={labelClass}>

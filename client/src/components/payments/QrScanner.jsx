@@ -1,20 +1,20 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export default function QrScanner({ onScan }) {
   const scannerRef = useRef(null);
 
-  const startScan = () => {
+  useEffect(() => {
     if (scannerRef.current) return;
 
     scannerRef.current = new Html5QrcodeScanner(
       "qr-reader",
       {
         fps: 10,
-        qrbox: { width: 280, height: 280 },
+        qrbox: { width: 250, height: 250 },
         rememberLastUsedCamera: true,
         experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true, // ✅ iOS fix
+          useBarCodeDetectorIfSupported: true,
         },
       },
       false
@@ -23,27 +23,23 @@ export default function QrScanner({ onScan }) {
     scannerRef.current.render(
       (decodedText) => {
         onScan(decodedText);
-        scannerRef.current.clear().catch(() => {});
+        scannerRef.current.clear().catch(() => { });
         scannerRef.current = null;
       },
-      () => {}
+      () => { }
     );
-  };
+
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(() => { });
+        scannerRef.current = null;
+      }
+    };
+  }, [onScan]);
 
   return (
-    <div>
-      <button
-        onClick={startScan}
-        className="w-full bg-purple-600 py-2 rounded text-white font-semibold"
-      >
-        Start QR Scan
-      </button>
-
-      <div id="qr-reader" className="scale-[0.9]" />
-
-      <p className="text-xs text-gray-400 text-center">
-        iPhone tip: hold QR steady with good lighting
-      </p>
+    <div className="w-full">
+      <div id="qr-reader" className="overflow-hidden rounded-lg w-full" />
     </div>
   );
 }

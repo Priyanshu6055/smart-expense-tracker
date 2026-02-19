@@ -80,8 +80,8 @@ exports.checkBudgetStatus = async (req, res) => {
           percent >= 100
             ? "Over budget!"
             : percent >= 80
-            ? "Close to limit"
-            : null,
+              ? "Close to limit"
+              : null,
       });
     }
 
@@ -136,14 +136,8 @@ exports.getBudgetSuggestion = async (req, res) => {
     }
 
     // 3. Prepare prompt for Hugging Face model
-    const userPrompt = `
-You are a financial assistant. Analyze the following budget and expenses for a user in ${month}/${year}.
-Suggest improvements if they overspend, underuse categories, or can reallocate funds.
-
-Data: ${JSON.stringify(details, null, 2)}
-
-Give clear, actionable suggestions.
-    `;
+    const userPrompt = `You are a financial assistant. Analyze the user's budget and expenses for ${month}/${year} using the data below. Give clear actionable suggestions on overspending, underused categories, and smart reallocation. Keep the response under 300 tokens, use only plain numbers (no currency words/symbols), and highlight the top 3 fixes.
+    Data: ${JSON.stringify(details, null, 2)}`;
 
     // 4. Call Hugging Face Inference API chatCompletion
     const completion = await client.chatCompletion({
