@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { X } from "lucide-react";
-import { FaRupeeSign } from "react-icons/fa";
-
+import { X, Smartphone, ScanLine, IndianRupee } from "lucide-react";
 import QrScanner from "./QrScanner";
 import { extractUpiFromQr } from "./upi.utils";
 
@@ -69,93 +67,111 @@ export default function UpiPayModal({ open, onClose, categories, onPay }) {
     window.location.href = upiUrl;
   };
 
+  const inputClass = "w-full px-4 py-3 rounded-xl bg-background border border-input focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm placeholder:text-muted-foreground";
+
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-gray-800 p-6 rounded-xl w-full max-w-sm relative">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+      <div className="bg-card p-6 rounded-2xl w-full max-w-sm relative border border-border/50 shadow-2xl animate-scale-in">
 
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-white"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground hover:bg-muted p-1.5 rounded-full transition-all duration-200"
         >
           <X size={20} />
         </button>
 
-        <h2 className="text-xl text-purple-400 font-bold mb-2 text-center">
-          Pay via UPI
-        </h2>
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
+            <Smartphone size={24} className="text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-foreground leading-tight">Pay via UPI</h2>
+            <p className="text-xs text-muted-foreground">Secure & Fast Payments</p>
+          </div>
+        </div>
 
         {error && (
-          <p className="text-red-400 text-sm text-center mb-2">{error}</p>
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
+            ⚠️ {error}
+          </div>
         )}
 
         <button
           onClick={() => setShowScanner(true)}
-          className="w-full mb-2 bg-gray-700 py-2 rounded text-white"
+          className="w-full mb-4 bg-secondary/50 text-foreground border border-border/50 py-3 rounded-xl hover:bg-secondary/80 transition-all duration-200 text-sm font-semibold active:scale-[0.98] flex items-center justify-center gap-2 group shadow-sm hover:shadow-md"
         >
-          Scan QR to auto-fill UPI
+          <ScanLine size={16} className="text-primary group-hover:scale-110 transition-transform" /> Scan QR Autofill
         </button>
 
         {showScanner && (
-          <QrScanner
-            onScan={(text) => {
-              const data = extractUpiFromQr(text);
-              if (data?.pa) {
-                setUpiId(data.pa);
-                setPayeeName(data.pn || "");
-                setShowScanner(false);
-              } else {
-                setError("Invalid UPI QR code");
-              }
-            }}
-          />
+          <div className="mb-4 rounded-xl overflow-hidden border border-border shadow-inner">
+            <QrScanner
+              onScan={(text) => {
+                const data = extractUpiFromQr(text);
+                if (data?.pa) {
+                  setUpiId(data.pa);
+                  setPayeeName(data.pn || "");
+                  setShowScanner(false);
+                } else {
+                  setError("Invalid UPI QR code");
+                }
+              }}
+            />
+          </div>
         )}
 
-        <input
-          placeholder="UPI ID (name@upi)"
-          value={upiId}
-          onChange={(e) => setUpiId(e.target.value)}
-          className="w-full mb-2 p-2 rounded bg-gray-700 text-white"
-        />
+        <div className="space-y-3">
+          <div className="relative">
+            <input
+              placeholder="UPI ID (e.g. name@upi)"
+              value={upiId}
+              onChange={(e) => setUpiId(e.target.value)}
+              className={inputClass}
+            />
+          </div>
 
-        <div className="flex items-center gap-2 mb-2 bg-gray-700 p-2 rounded">
-          <FaRupeeSign />
+          <div className="flex items-center gap-2 bg-background px-4 py-3 rounded-xl border border-input focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all duration-200">
+            <IndianRupee size={16} className="text-muted-foreground shrink-0" />
+            <input
+              type="number"
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full bg-transparent outline-none text-foreground font-semibold text-lg placeholder:text-muted-foreground/50 placeholder:text-sm placeholder:font-normal"
+            />
+          </div>
+
+          <div className="relative">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className={`${inputClass} appearance-none cursor-pointer`}
+            >
+              <option value="">Select Category</option>
+              {categories.map((c, i) => (
+                <option key={i} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
           <input
-            type="number"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full bg-transparent outline-none text-white"
+            placeholder="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className={inputClass}
           />
         </div>
-
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="w-full mb-2 p-2 rounded bg-gray-700 text-white"
-        >
-          <option value="">Select Category</option>
-          {categories.map((c, i) => (
-            <option key={i} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-
-        <input
-          placeholder="Description (optional)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
-        />
 
         <button
           disabled={paying}
           onClick={handlePay}
-          className={`w-full py-2 rounded font-semibold ${
-            paying ? "bg-gray-600" : "bg-purple-600 hover:bg-purple-700"
-          }`}
+          className={`w-full mt-6 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 active:scale-[0.98] shadow-lg ${paying
+            ? "bg-[#00aaff] text-muted-foreground cursor-not-allowed"
+            : "bg-[#00aaff] text-primary-foreground hover:bg-primary-hover hover:shadow-primary/25"
+            }`}
         >
-          {paying ? "Opening UPI…" : "Pay & Open UPI App"}
+          {paying ? "Opening UPI..." : "Pay Now"}
         </button>
       </div>
     </div>

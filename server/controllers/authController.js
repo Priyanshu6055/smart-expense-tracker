@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const GroupInvite = require('../models/GroupInvite');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -15,13 +16,20 @@ exports.registerUser = async (req, res) => {
 
         const user = await User.create({ name, email, password });
 
+        // Auto-detect pending invites for this email
+        const pendingInvites = await GroupInvite.countDocuments({
+            invitedEmail: email.toLowerCase(),
+            status: "pending",
+        });
+
         res.status(201).json({
             success: true,
             data: {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
-                token: generateToken(user._id)
+                token: generateToken(user._id),
+                pendingInvites,
             }
         });
     } catch (err) {

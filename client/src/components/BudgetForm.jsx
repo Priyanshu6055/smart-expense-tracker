@@ -9,8 +9,6 @@ const months = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-const iconClass = "text-blue-400 text-xl";
-
 const BudgetForm = ({ onBudgetAdded }) => {
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
@@ -21,8 +19,8 @@ const BudgetForm = ({ onBudgetAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); 
-    setError("");   
+    setMessage("");
+    setError("");
 
     try {
       const res = await axios.post(
@@ -30,7 +28,7 @@ const BudgetForm = ({ onBudgetAdded }) => {
         { category, amount: Number(amount), month, year },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-      
+
       if (res.data.success) {
         setMessage("Budget set successfully!");
         onBudgetAdded();
@@ -44,148 +42,103 @@ const BudgetForm = ({ onBudgetAdded }) => {
   };
 
   return (
-    // Outer container matching the design pattern's background
-    <div className="flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-950 p-4 font-inter">
-      {/* Main form card with dark theme styling */}
-      <div
-        className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md
-                   transform scale-95 opacity-0 animate-fade-in-up border border-blue-700"
-      >
-        <h2 className="text-3xl font-bold text-center text-blue-400 mb-6">
-          Set Your Budget
-        </h2>
+    <div className="w-full">
+      {/* Dynamic message and error display */}
+      {message && (
+        <p className="bg-emerald-500/10 text-emerald-600 p-3 rounded-xl text-sm mb-4 border border-emerald-500/20 font-medium text-center">
+          {message}
+        </p>
+      )}
+      {error && (
+        <p className="bg-red-500/10 text-red-600 p-3 rounded-xl text-sm mb-4 border border-red-500/20 font-medium text-center">
+          {error}
+        </p>
+      )}
 
-        {/* Dynamic message and error display */}
-        {message && (
-          <p className="text-green-400 text-sm text-center mb-4 transition-opacity duration-500">
-            {message}
-          </p>
-        )}
-        {error && (
-          <p className="text-red-400 text-sm text-center mb-4 transition-opacity duration-500">
-            {error}
-          </p>
-        )}
-
-        {/* Form elements with new, consistent dark styling */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="category" className="block text-gray-300 font-medium">
-              <FiEdit3 className="inline-block mr-2" />
-              Category
-            </label>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="category" className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+            Category
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
+              <FiEdit3 />
+            </div>
             <input
               type="text"
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-600 rounded-lg
-                         bg-gray-700 text-white placeholder-gray-400
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         outline-none transition duration-200 ease-in-out
-                         hover:border-blue-500"
-              placeholder="e.g. Food"
+              className="w-full pl-10 pr-4 py-3 bg-background border border-input rounded-xl text-foreground placeholder:text-muted-foreground text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              placeholder="e.g. Food, Travel..."
             />
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="amount" className="block text-gray-300 font-medium">
-              <FiDollarSign className="inline-block mr-2" />
-              Amount
-            </label>
+        <div>
+          <label htmlFor="amount" className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+            Amount (₹)
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
+              <FiDollarSign />
+            </div>
             <input
               type="number"
               id="amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-600 rounded-lg
-                         bg-gray-700 text-white placeholder-gray-400
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         outline-none transition duration-200 ease-in-out
-                         hover:border-blue-500"
-              placeholder="Enter budget amount"
+              className="w-full pl-10 pr-4 py-3 bg-background border border-input rounded-xl text-foreground placeholder:text-muted-foreground font-bold text-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              placeholder="0.00"
             />
           </div>
-          
-          <div className="flex gap-2 mb-2">
-            <div className="w-1/2">
-              <label htmlFor="month" className="block text-gray-300 font-medium">
-                <FiCalendar className="inline-block mr-2" />
-                Month
-              </label>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label htmlFor="month" className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+              Month
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
+                <FiCalendar />
+              </div>
               <select
                 id="month"
                 value={month}
                 onChange={(e) => setMonth(Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-600 rounded-lg
-                           bg-gray-700 text-white placeholder-gray-400
-                           focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                           outline-none transition duration-200 ease-in-out
-                           hover:border-blue-500"
+                className="w-full pl-10 pr-4 py-3 bg-background border border-input rounded-xl text-foreground text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none cursor-pointer"
               >
                 {months.map((m, i) => (
                   <option key={i + 1} value={i + 1}>{m}</option>
                 ))}
               </select>
             </div>
-            <div className="w-1/2">
-              <label htmlFor="year" className="block text-gray-300 font-medium">
-                Year
-              </label>
-              <input
-                type="number"
-                id="year"
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-600 rounded-lg
-                           bg-gray-700 text-white placeholder-gray-400
-                           focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                           outline-none transition duration-200 ease-in-out
-                           hover:border-blue-500"
-                placeholder="Enter year"
-              />
-            </div>
           </div>
+          <div className="flex-1">
+            <label htmlFor="year" className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+              Year
+            </label>
+            <input
+              type="number"
+              id="year"
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+              className="w-full px-4 py-3 bg-background border border-input rounded-xl text-foreground text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              placeholder="YYYY"
+            />
+          </div>
+        </div>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold
-                       hover:bg-blue-700 active:bg-blue-800
-                       transition duration-300 ease-in-out
-                       transform hover:-translate-y-1 hover:shadow-lg"
-          >
-            Save Budget
-          </button>
-        </form>
-      </div>
-
-      {/* Custom CSS for animations and font import */}
-      <style>
-        {`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        
-        .font-inter {
-          font-family: 'Inter', sans-serif;
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        .animate-fade-in-up {
-          animation: fadeInUp 0.7s ease-out forwards;
-        }
-        `}
-      </style>
+        <button
+          type="submit"
+          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-bold text-sm hover:bg-primary-hover shadow-lg hover:shadow-primary/20 transition-all transform active:scale-[0.98] mt-2"
+        >
+          Save Budget
+        </button>
+      </form>
     </div>
   );
 };

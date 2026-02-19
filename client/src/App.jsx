@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -14,63 +14,28 @@ import IncomeManager from "./components/IncomeManager";
 import ExpenseManager from "./components/AddExpense";
 import BudgetPage from "./pages/BudgetPage";
 import Profile from "./pages/Profile";
+import GroupsPage from "./pages/GroupsPage";
+import GroupDetailPage from "./pages/GroupDetailPage";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import { Sun, Moon, Menu, X } from "lucide-react";
 
 function App() {
   return (
-    <Router>
-      <MainLayout />
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <MainLayout />
+      </Router>
+    </ThemeProvider>
   );
 }
 
 function MainLayout() {
   const location = useLocation();
-
-  // Only show nav on these routes
   const showNav = ["/", "/login", "/register"].includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-950 font-inter">
-      {showNav && (
-        <nav
-          className="bg-gray-800 p-4 md:p-6 shadow-xl flex justify-center items-center space-x-6 md:space-x-12
-                        transform -translate-y-full opacity-0 animate-slide-down-fade
-                        border-b-4 border-blue-700"
-        >
-          {/* Home Link */}
-          <Link
-            to="/"
-            className="text-lg md:text-xl font-bold text-blue-400 hover:text-blue-200 
-                       transition duration-300 ease-in-out transform hover:scale-110 hover:skew-x-1
-                       relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5
-                       after:bg-blue-500 after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Home
-          </Link>
-
-          {/* Login Link */}
-          <Link
-            to="/login"
-            className="text-lg md:text-xl font-bold text-blue-400 hover:text-blue-200 
-                       transition duration-300 ease-in-out transform hover:scale-110 hover:skew-x-1
-                       relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5
-                       after:bg-blue-500 after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Login
-          </Link>
-
-          {/* Register Link */}
-          <Link
-            to="/register"
-            className="text-lg md:text-xl font-bold text-blue-400 hover:text-blue-200 
-                       transition duration-300 ease-in-out transform hover:scale-110 hover:skew-x-1
-                       relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5
-                       after:bg-blue-500 after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Register
-          </Link>
-        </nav>
-      )}
+    <div className="min-h-screen bg-background text-foreground font-inter transition-colors duration-300">
+      {showNav && <PublicNav />}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -81,34 +46,103 @@ function MainLayout() {
         <Route path="/manage-expense" element={<ExpenseManager />} />
         <Route path="/budget-page" element={<BudgetPage />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/groups" element={<GroupsPage />} />
+        <Route path="/groups/:groupId" element={<GroupDetailPage />} />
       </Routes>
-
-      <style>
-        {`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-
-        .font-inter {
-          font-family: 'Inter', sans-serif;
-        }
-
-        @keyframes slideDownFade {
-          from {
-            opacity: 0;
-            transform: translateY(-100%);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-slide-down-fade {
-          animation: slideDownFade 0.7s ease-out forwards;
-          animation-delay: 0.2s;
-        }
-        `}
-      </style>
     </div>
+  );
+}
+
+function PublicNav() {
+  const [isOpen, setIsOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
+
+  const links = [
+    { to: "/", label: "Home" },
+    { to: "/login", label: "Login" },
+    { to: "/register", label: "Register" },
+  ];
+
+  const isActive = (path) => location.pathname === path;
+
+  return (
+    <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border shadow-sm transition-colors duration-300">
+      {/* Royal Blue gradient accent bar */}
+      <div className="h-0.5 w-full bg-gradient-to-r from-primary via-blue-400 to-primary" />
+
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        {/* Brand */}
+        <Link to="/" className="text-xl font-bold text-primary tracking-tight flex items-center gap-2">
+          💰 ExpenseTracker
+        </Link>
+
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-1">
+          {links.map(({ to, label }) => (
+            <Link
+              key={to}
+              to={to}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(to)
+                ? "bg-primary/10 text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+            >
+              {label}
+            </Link>
+          ))}
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="ml-2 p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Toggle Theme"
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
+
+        {/* Mobile hamburger */}
+        <div className="flex md:hidden items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Toggle Theme"
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Toggle Menu"
+          >
+            {isOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile dropdown */}
+      {isOpen && (
+        <div className="md:hidden border-t border-border bg-card animate-scale-in">
+          <div className="px-4 py-2 space-y-1">
+            {links.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                onClick={() => setIsOpen(false)}
+                className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(to)
+                  ? "bg-primary/10 text-primary font-semibold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </nav>
   );
 }
 

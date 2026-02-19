@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 
 function Login() {
   const navigate = useNavigate();
@@ -7,12 +8,12 @@ function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // Loading state
-  const [showPassword, setShowPassword] = useState(false); // Show/Hide password
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Forgot Password Flow
   const [showForgot, setShowForgot] = useState(false);
-  const [step, setStep] = useState(1); // 1=email, 2=otp+new password
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -32,12 +33,11 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  /** ============== LOGIN SUBMIT ============== */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setError("");
-    setLoading(true); // start loading
+    setLoading(true);
 
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
@@ -57,11 +57,10 @@ function Login() {
     } catch {
       setError("Server error. Please try again.");
     } finally {
-      setLoading(false); // stop loading
+      setLoading(false);
     }
   };
 
-  /** ============== FORGOT PASSWORD ============== */
   const sendOtp = async () => {
     setError("");
     try {
@@ -74,7 +73,7 @@ function Login() {
       if (res.ok) {
         setMessage("OTP sent to your email");
         setStep(2);
-        setTimer(600); // 10 minutes
+        setTimer(600);
       } else {
         setError(data.message);
       }
@@ -105,94 +104,99 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-950 p-4 font-inter">
-      <div className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md animate-fade-in-up border border-blue-700">
-        <h2 className="text-3xl font-bold text-center text-blue-400 mb-6">
-          {showForgot ? "Forgot Password" : "Login to Your Account"}
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 font-inter transition-colors duration-300">
+      <div className="bg-card p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md animate-fade-in-up border border-border">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-1">
+          {showForgot ? "Reset Password" : "Welcome back"}
         </h2>
+        <p className="text-center text-muted-foreground text-sm mb-6">
+          {showForgot ? "We'll help you recover your account" : "Sign in to your account"}
+        </p>
 
-        {message && <p className="text-green-400 text-sm text-center mb-4">{message}</p>}
-        {error && <p className="text-red-400 text-sm text-center mb-4">{error}</p>}
+        {message && (
+          <div className="bg-success/10 border border-success/30 text-success p-3 rounded-lg text-sm text-center mb-4">
+            {message}
+          </div>
+        )}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/30 text-destructive p-3 rounded-lg text-sm text-center mb-4">
+            {error}
+          </div>
+        )}
 
         {!showForgot ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-gray-300 font-medium">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-lg bg-gray-700 text-white"
-              />
+              <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="you@example.com"
+                  className="w-full pl-10 pr-4 py-2.5 border border-input rounded-xl bg-surface text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200"
+                />
+              </div>
             </div>
 
-            <div className="relative">
-              <label className="block text-gray-300 font-medium">Password</label>
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-lg bg-gray-700 text-white"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-400 hover:text-gray-200"
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-12 py-2.5 border border-input rounded-xl bg-surface text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
-              className={`w-full py-3 rounded-lg text-white flex justify-center items-center gap-2 ${
-                loading ? "bg-blue-500 cursor-not-allowed" : "bg-blue-600"
-              }`}
+              className={`w-full py-3 rounded-xl font-semibold text-primary-foreground flex justify-center items-center gap-2 transition-all ${loading ? "bg-primary/60 cursor-not-allowed" : "bg-primary hover:brightness-110 shadow-md hover:shadow-lg"
+                }`}
               disabled={loading}
             >
               {loading && (
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                 </svg>
               )}
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
         ) : (
           <div className="space-y-4">
             {step === 1 && (
               <>
-                <input
-                  type="email"
-                  value={email}
-                  placeholder="Enter your email"
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-700 text-white"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    placeholder="Enter your email"
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-input rounded-xl bg-surface text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200"
+                  />
+                </div>
                 <button
                   onClick={sendOtp}
-                  className="w-full bg-blue-600 py-3 rounded-lg text-white"
+                  className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:brightness-110 shadow-md transition-all"
                 >
                   Send OTP
                 </button>
@@ -201,45 +205,58 @@ function Login() {
 
             {step === 2 && (
               <>
-                <input
-                  type="text"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-700 text-white"
-                />
-                <input
-                  type="password"
-                  placeholder="Enter new password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-700 text-white"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">OTP Code</label>
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-input rounded-xl bg-surface text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">New Password</label>
+                  <input
+                    type="password"
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-input rounded-xl bg-surface text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200"
+                  />
+                </div>
                 <button
                   onClick={resetPassword}
-                  className="w-full bg-green-600 py-3 rounded-lg text-white"
+                  className="w-full bg-success text-white py-3 rounded-xl font-semibold hover:brightness-110 shadow-md transition-all"
                 >
                   Reset Password
                 </button>
-                <p className="text-gray-400 text-sm mt-2 text-center">
-                  Time left: {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
+                <p className="text-muted-foreground text-sm text-center">
+                  ⏱ Time left: {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
                 </p>
               </>
             )}
           </div>
         )}
 
-        <p className="mt-6 text-center text-sm text-gray-400">
+        <div className="mt-6 text-center">
           {!showForgot ? (
-            <button className="text-blue-500 underline" onClick={() => setShowForgot(true)}>
+            <button
+              className="text-primary text-sm hover:underline transition"
+              onClick={() => setShowForgot(true)}
+            >
               Forgot Password?
             </button>
           ) : (
-            <button className="text-blue-500 underline" onClick={() => setShowForgot(false)}>
+            <button
+              className="inline-flex items-center gap-1 text-primary text-sm hover:underline transition"
+              onClick={() => { setShowForgot(false); setStep(1); }}
+            >
+              <ArrowLeft size={14} />
               Back to Login
             </button>
           )}
-        </p>
+        </div>
       </div>
     </div>
   );

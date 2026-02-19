@@ -52,7 +52,7 @@ function Dashboard() {
   // ---------------- GUARD ----------------
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-400">
+      <div className="min-h-screen flex items-center justify-center text-destructive">
         Authentication required. Please login again.
       </div>
     );
@@ -219,25 +219,34 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-blue-300">
-        Loading dashboard…
+      <div className="min-h-screen flex items-center justify-center text-primary">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm text-muted-foreground">Loading dashboard…</span>
+        </div>
       </div>
     );
   }
 
   // ---------------- RENDER ----------------
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-950 text-gray-100 px-4 py-12">
+
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300 font-inter">
       <Navbar />
 
-      <div className="mt-6 max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold text-blue-400 mb-8 text-center">
-          Dashboard
-        </h1>
+      <div className="max-w-6xl mt-12 mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <header className="mb-8 md:mb-12  space-y-2">
+          <h1 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            Overview of your financial activity and recent transactions.
+          </p>
+        </header>
 
         {error && (
-          <div className="bg-red-900/40 border border-red-600 text-red-300 p-3 rounded mb-6 text-center">
-            {error}
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-xl mb-8 flex items-center justify-center gap-2 text-sm font-medium animate-fade-in-up">
+            <span>⚠️</span> {error}
           </div>
         )}
 

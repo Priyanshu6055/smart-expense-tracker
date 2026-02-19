@@ -8,8 +8,14 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#00bcd4",
-  "#f44336", "#9c27b0", "#673ab7",
+  "#2563eb", // Royal Blue
+  "#10b981", // Emerald
+  "#f59e0b", // Amber
+  "#ef4444", // Red
+  "#8b5cf6", // Violet
+  "#ec4899", // Pink
+  "#06b6d4", // Cyan
+  "#6366f1", // Indigo
 ];
 
 function ExpenseChart({ transactions }) {
@@ -27,27 +33,60 @@ function ExpenseChart({ transactions }) {
   }));
 
   return (
-    <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 mb-10">
-      <h2 className="text-2xl font-bold text-blue-400 mb-6 text-center">
-        Expense Breakdown by Category
+    <div className="bg-card p-6 md:p-8 rounded-2xl shadow-xl border border-border/50 mb-8 animate-fade-in-up">
+      <h2 className="text-lg font-bold text-foreground mb-6 text-center tracking-tight">
+        Expense Breakdown
       </h2>
 
       {chartData.length ? (
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={320}>
           <PieChart>
-            <Pie data={chartData} dataKey="value" outerRadius={100}>
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              outerRadius={110}
+              innerRadius={65}
+              paddingAngle={2}
+              stroke="none"
+            >
               {chartData.map((_, i) => (
-                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                <Cell
+                  key={i}
+                  fill={COLORS[i % COLORS.length]}
+                  stroke="transparent"
+                />
               ))}
             </Pie>
-            <Tooltip />
-            <Legend />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "hsl(var(--popover))",
+                borderColor: "hsl(var(--border))",
+                borderRadius: "12px",
+                color: "hsl(var(--popover-foreground))",
+                fontSize: "13px",
+                boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+                padding: "8px 12px",
+              }}
+              itemStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
+              formatter={(value) => `₹${value.toLocaleString()}`}
+            />
+            <Legend
+              verticalAlign="bottom"
+              height={36}
+              iconType="circle"
+              iconSize={10}
+              wrapperStyle={{ fontSize: '12px', marginTop: '20px', paddingTop: '10px' }}
+            />
           </PieChart>
         </ResponsiveContainer>
       ) : (
-        <p className="text-center text-gray-400">
-          No expense data available
-        </p>
+        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
+          <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center ring-1 ring-border/50">
+            <span className="text-2xl grayscale opacity-50">📊</span>
+          </div>
+          <p className="text-sm font-medium">No expense data to visualize</p>
+        </div>
       )}
     </div>
   );
