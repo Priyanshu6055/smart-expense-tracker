@@ -1,4 +1,4 @@
-# 🧠 ExpenseIQ — Smart Collaborative Expense Tracker
+# ExpenseIQ v.3.0.0 — Smart Collaborative Expense Tracker
 
 ExpenseIQ and a powerful personal and group expense tracking platform that helps you manage your finances with ease. Built for individuals and teams to track, split, and settle expenses in real-time.
 
