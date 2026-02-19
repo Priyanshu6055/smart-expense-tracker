@@ -77,7 +77,7 @@ function Register() {
               Full Name
             </label>
             <div className="relative">
-              <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <User size={16} className="absolute mt-2 left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 name="name"
@@ -96,7 +96,7 @@ function Register() {
               Email Address
             </label>
             <div className="relative">
-              <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Mail size={16} className="absolute mt-2 left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="email"
                 name="email"
@@ -115,7 +115,7 @@ function Register() {
               Password
             </label>
             <div className="relative">
-              <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Lock size={16} className="absolute mt-2 left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="password"
                 name="password"
@@ -131,7 +131,7 @@ function Register() {
 
           <button
             type="submit"
-            className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold
+            className="w-full bg-[#00aaff] text-primary-foreground py-3 rounded-xl font-semibold
                        hover:brightness-110 shadow-md hover:shadow-lg transition-all duration-300"
           >
             Create Account

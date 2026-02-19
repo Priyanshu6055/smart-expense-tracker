@@ -129,7 +129,7 @@ function Login() {
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Mail size={16} className="absolute left-3 mt-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="email"
                   name="email"
@@ -145,7 +145,7 @@ function Login() {
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Lock size={16} className="absolute mt-2 left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -158,7 +158,7 @@ function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 mt-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -167,7 +167,7 @@ function Login() {
 
             <button
               type="submit"
-              className={`w-full py-3 rounded-xl font-semibold text-primary-foreground flex justify-center items-center gap-2 transition-all ${loading ? "bg-primary/60 cursor-not-allowed" : "bg-primary hover:brightness-110 shadow-md hover:shadow-lg"
+              className={`w-full py-3 rounded-xl font-semibold text-primary-foreground flex justify-center items-center gap-2 transition-all ${loading ? "bg-[#00aaff]/60 cursor-not-allowed" : "bg-[#00aaff] hover:brightness-110 shadow-md hover:shadow-lg"
                 }`}
               disabled={loading}
             >
@@ -196,7 +196,7 @@ function Login() {
                 </div>
                 <button
                   onClick={sendOtp}
-                  className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:brightness-110 shadow-md transition-all"
+                  className="w-full bg-[#00aaff] text-primary-foreground py-3 rounded-xl font-semibold hover:brightness-110 shadow-md transition-all"
                 >
                   Send OTP
                 </button>

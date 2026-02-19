@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, DollarSign, Lock, Sparkles } from "lucide-react";
+import { Users, DollarSign, Lock, Sparkles } from "lucide-react";
 
 function Home() {
   const features = [
     {
-      icon: TrendingUp,
-      title: "Real-Time Insights",
-      desc: "Monitor daily expenses with detailed analytics and visual charts for informed decisions.",
+      icon: Users,
+      title: "Group Expense Split",
+      desc: "Easily split bills and settle debts with friends or colleagues.",
     },
     {
       icon: DollarSign,

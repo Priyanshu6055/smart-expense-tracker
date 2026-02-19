@@ -74,7 +74,7 @@ function PublicNav() {
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Brand */}
         <Link to="/" className="text-xl font-bold text-primary tracking-tight flex items-center gap-2">
-          💰 ExpenseTracker
+          ExpenseIQ
         </Link>
 
         {/* Desktop links */}
