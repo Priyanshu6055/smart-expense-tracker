@@ -9,11 +9,11 @@ const months = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-const BudgetForm = ({ onBudgetAdded }) => {
-  const [category, setCategory] = useState("");
-  const [amount, setAmount] = useState("");
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [year, setYear] = useState(new Date().getFullYear());
+const BudgetForm = ({ onBudgetAdded, editingData = null }) => {
+  const [category, setCategory] = useState(editingData?.category || "");
+  const [amount, setAmount] = useState(editingData?.budget || "");
+  const [month, setMonth] = useState(editingData?.month || new Date().getMonth() + 1);
+  const [year, setYear] = useState(editingData?.year || new Date().getFullYear());
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -23,21 +23,28 @@ const BudgetForm = ({ onBudgetAdded }) => {
     setError("");
 
     try {
-      const res = await axios.post(
-        `${API_URL}/api/budget`,
+      const url = editingData
+        ? `${API_URL}/api/budget/${editingData.id}`
+        : `${API_URL}/api/budget`;
+      const method = editingData ? "put" : "post";
+
+      const res = await axios[method](
+        url,
         { category, amount: Number(amount), month, year },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
       if (res.data.success) {
-        setMessage("Budget set successfully!");
+        setMessage(editingData ? "Budget updated successfully!" : "Budget set successfully!");
         onBudgetAdded();
-        setCategory("");
-        setAmount("");
+        if (!editingData) {
+          setCategory("");
+          setAmount("");
+        }
       }
     } catch (err) {
       console.error(err);
-      setError("Error setting budget. Please try again.");
+      setError(editingData ? "Error updating budget." : "Error setting budget.");
     }
   };
 
@@ -78,19 +85,19 @@ const BudgetForm = ({ onBudgetAdded }) => {
 
         <div>
           <label htmlFor="amount" className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-            Amount (₹)
+            Amount
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
+            {/* <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
               <FiDollarSign />
-            </div>
+            </div> */}
             <input
               type="number"
               id="amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full pl-10 pr-4 py-3 bg-background border border-input rounded-xl text-foreground placeholder:text-muted-foreground font-bold text-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              className="w-full pl-4 pr-4 py-3 bg-background border border-input rounded-xl text-foreground placeholder:text-muted-foreground font-bold text-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
               placeholder="0.00"
             />
           </div>
@@ -134,9 +141,9 @@ const BudgetForm = ({ onBudgetAdded }) => {
 
         <button
           type="submit"
-          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-bold text-sm hover:bg-primary-hover shadow-lg hover:shadow-primary/20 transition-all transform active:scale-[0.98] mt-2"
+          className="w-full bg-[#40c79a] text-primary-foreground py-3.5 rounded-xl font-bold text-sm hover:bg-primary-hover shadow-lg hover:shadow-primary/20 transition-all transform active:scale-[0.98] mt-2"
         >
-          Save Budget
+          {editingData ? "Update Budget" : "Save Budget"}
         </button>
       </form>
     </div>

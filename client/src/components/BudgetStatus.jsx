@@ -2,13 +2,12 @@ import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
-import { Wallet, CreditCard, TrendingDown, ArrowRight, ArrowLeft, PieChart } from "lucide-react";
+import { Wallet, CreditCard, TrendingDown, ArrowRight, ArrowLeft, PieChart, Edit2, Trash2 } from "lucide-react";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-// Reusable components for better structure
 const BudgetSummaryCard = ({ title, amount, icon: Icon, color, bg }) => (
   <div className="bg-card border border-border/50 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-full group">
     <div className="flex justify-between items-start mb-4">
@@ -23,7 +22,7 @@ const BudgetSummaryCard = ({ title, amount, icon: Icon, color, bg }) => (
   </div>
 );
 
-const BudgetProgressCard = ({ s }) => {
+const BudgetProgressCard = ({ s, onEdit, onDelete, month, year }) => {
   const percent = s.budget ? (s.spent / s.budget) * 100 : 0;
   let progressColor = "bg-primary";
   let statusText = "On Track";
@@ -42,11 +41,10 @@ const BudgetProgressCard = ({ s }) => {
   }
 
   return (
-    <div className="bg-card border border-border/50 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all group">
+    <div className="bg-card border border-border/50 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all group relative">
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg shadow-inner">
-            {/* Use category first letter if no icon mapping available easily without huge map */}
             {s.category.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -54,9 +52,25 @@ const BudgetProgressCard = ({ s }) => {
             <p className="text-xs text-muted-foreground">Budget: ₹{s.budget}</p>
           </div>
         </div>
-        <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${statusColor}`}>
-          {statusText}
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onEdit({ ...s, month, year })}
+            className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+            title="Edit Budget"
+          >
+            <Edit2 size={14} />
+          </button>
+          <button
+            onClick={() => onDelete(s)}
+            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+            title="Delete Budget"
+          >
+            <Trash2 size={14} />
+          </button>
+          <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${statusColor}`}>
+            {statusText}
+          </span>
+        </div>
       </div>
 
       <div className="flex justify-between items-end mb-2">
@@ -75,7 +89,7 @@ const BudgetProgressCard = ({ s }) => {
 };
 
 
-const BudgetStatus = ({ month, year, refresh }) => {
+const BudgetStatus = ({ month, year, refresh, onEdit, onDelete }) => {
   const [status, setStatus] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -198,7 +212,14 @@ const BudgetStatus = ({ month, year, refresh }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {paginatedItems.map((s, idx) => (
-                <BudgetProgressCard key={idx + startIndex} s={s} />
+                <BudgetProgressCard
+                  key={idx + startIndex}
+                  s={s}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  month={month}
+                  year={year}
+                />
               ))}
             </div>
 

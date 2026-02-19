@@ -83,7 +83,7 @@ export default function FiltersBar({
           <div className="relative">
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="    Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={`${inputClass} pl-10`}

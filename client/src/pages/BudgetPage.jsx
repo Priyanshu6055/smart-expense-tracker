@@ -2,15 +2,51 @@ import React, { useState } from "react";
 import BudgetForm from "../components/BudgetForm";
 import BudgetStatus from "../components/BudgetStatus";
 import Navbar from "../components/Navbar";
+import axios from "axios";
+import DeleteConfirmModal from "../components/dashboard/DeleteConfirmModal";
 import { Sparkles, PlusCircle, X } from "lucide-react";
 
 const BudgetPage = () => {
   const [refresh, setRefresh] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [editingBudget, setEditingBudget] = useState(null);
+  const [budgetToDelete, setBudgetToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [suggestions, setSuggestions] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const API_URL = import.meta.env.VITE_BACKEND_URL;
+
+  const confirmDeleteBudget = async () => {
+    if (!budgetToDelete) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_URL}/api/budget/${budgetToDelete.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRefresh(!refresh);
+      setShowDeleteModal(false);
+      setBudgetToDelete(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete budget.");
+    }
+  };
+
+  const handleDeleteClick = (budget) => {
+    setBudgetToDelete(budget);
+    setShowDeleteModal(true);
+  };
+
+  const openEditModal = (budget) => {
+    setEditingBudget(budget);
+    setShowModal(true);
+  };
+
+  const closeFormModal = () => {
+    setShowModal(false);
+    setEditingBudget(null);
+  };
   const month = String(new Date().getMonth() + 1).padStart(2, "0");
   const year = new Date().getFullYear();
 
@@ -138,28 +174,51 @@ const BudgetPage = () => {
           </div>
         )}
 
-        <BudgetStatus month={month} year={year} refresh={refresh} />
+        <BudgetStatus
+          month={month}
+          year={year}
+          refresh={refresh}
+          onEdit={openEditModal}
+          onDelete={handleDeleteClick}
+        />
       </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-card w-full max-w-lg rounded-2xl shadow-2xl border border-border/50 animate-scale-in overflow-hidden">
             <div className="px-6 py-5 border-b border-border bg-muted/10 flex justify-between items-center">
-              <h2 className="text-lg font-bold text-foreground tracking-tight">Set Monthly Budget</h2>
-              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground p-1 hover:bg-muted rounded-full transition-colors">
+              <h2 className="text-lg font-bold text-foreground tracking-tight">
+                {editingBudget ? "Edit Monthly Budget" : "Set Monthly Budget"}
+              </h2>
+              <button onClick={closeFormModal} className="text-muted-foreground hover:text-foreground p-1 hover:bg-muted rounded-full transition-colors">
                 <X size={20} />
               </button>
             </div>
             <div className="p-6">
               <BudgetForm
+                editingData={editingBudget}
                 onBudgetAdded={() => {
                   setRefresh(!refresh);
-                  setShowModal(false);
+                  closeFormModal();
                 }}
               />
             </div>
           </div>
         </div>
+      )}
+      {showDeleteModal && (
+        <DeleteConfirmModal
+          open={showDeleteModal}
+          title="Delete Budget?"
+          description="Are you sure you want to delete this budget category tracking? This won't delete your expenses."
+          itemDetails={{
+            title: budgetToDelete?.category,
+            subtitle: "Monthly Budget",
+            value: `₹ ${budgetToDelete?.budget}`
+          }}
+          onCancel={() => setShowDeleteModal(false)}
+          onConfirm={confirmDeleteBudget}
+        />
       )}
     </div>
   );

@@ -72,6 +72,7 @@ exports.checkBudgetStatus = async (req, res) => {
       const percent = (totalSpent / b.amount) * 100;
 
       status.push({
+        id: b._id,
         category: b.category,
         budget: b.amount,
         spent: totalSpent,
@@ -86,6 +87,44 @@ exports.checkBudgetStatus = async (req, res) => {
     }
 
     res.json({ success: true, data: status });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// Update budget by ID
+exports.updateBudget = async (req, res) => {
+  try {
+    const { category, amount, month, year } = req.body;
+    const { id } = req.params;
+
+    const budget = await Budget.findOneAndUpdate(
+      { _id: id, userId: req.user.id },
+      { category, amount, month, year },
+      { new: true }
+    );
+
+    if (!budget) {
+      return res.status(404).json({ success: false, message: "Budget not found" });
+    }
+
+    res.json({ success: true, data: budget });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// Delete budget by ID
+exports.deleteBudget = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const budget = await Budget.findOneAndDelete({ _id: id, userId: req.user.id });
+
+    if (!budget) {
+      return res.status(404).json({ success: false, message: "Budget not found" });
+    }
+
+    res.json({ success: true, message: "Budget deleted successfully" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
